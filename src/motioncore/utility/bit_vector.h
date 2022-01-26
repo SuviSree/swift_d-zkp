@@ -66,7 +66,7 @@ class BitVector {
 
   // Initialized with a single bit
   explicit BitVector(bool value) noexcept
-      : data_vector_{value ? SET_BIT_MASK[0] : std::byte(0x00)}, bit_size_(1) {}
+      : data_vector_{value ? SET_BIT_MASK[0] : std::byte(0x00)}, bit_size_(1) {}  //datatype declare
 
   // Move constructor
   BitVector(BitVector&& bv) noexcept
@@ -82,10 +82,14 @@ class BitVector {
       : data_vector_(bv.data_vector_.cbegin(), bv.data_vector_.cend()), bit_size_(bv.bit_size_) {}
 
   // Initialize from a std::vector<bool>, inefficient!
-  BitVector(const std::vector<bool>& data) : BitVector(data, data.size()) {}
+  //BitVector(const std::vector<bool>& data) : BitVector(data, data.size()) {} //initialise
+  BitVector(const std::vector<bool>& data) : BitVector(data, data.size()) {
+    for(auto each : data){
+      std::cout << " from bit_vector"<< each << std::endl;}
+    }
 
   explicit BitVector(uint n_bits, bool value = false)
-      : BitVector(static_cast<std::size_t>(n_bits), value) {}
+      : BitVector(static_cast<std::size_t>(n_bits), value) {} // THIS IS THE TYPE
 
   explicit BitVector(int n_bits, bool value = false)
       : BitVector(static_cast<std::size_t>(n_bits), value) {}
@@ -178,7 +182,7 @@ class BitVector {
 
   bool Get(std::size_t pos) const;
 
-  template <typename Allocator2>
+  template <typename Allocator2> //template <class T> class allocator;
   BitVector& operator&=(const BitVector<Allocator2>& other) noexcept;
 
   BitVector& operator&=(const BitSpan& bs) noexcept;

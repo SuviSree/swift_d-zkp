@@ -172,7 +172,7 @@ void Party::Run(std::size_t repeats) {
     if (party_id == communication_layer_->get_my_id()) {
       continue;
     }
-    work_exists |= backend_->GetOTProvider(party_id).GetNumOTsReceiver() > 0;
+    work_exists |= backend_->GetOTProvider(party_id).GetNumOTsReceiver() > 0;   // this has got nothing to do with SHARE(Pi,v)
     work_exists |= backend_->GetOTProvider(party_id).GetNumOTsSender() > 0;
   }
   if (!work_exists) {
@@ -180,15 +180,17 @@ void Party::Run(std::size_t repeats) {
     return;
   }
 
-  backend_->Sync();
+  backend_->Sync();  //sync is in communication layer file. Backend er object diye straightening it up. Ei particular backend object er jonne
   for (auto i = 0ull; i < repeats; ++i) {
     if (i > 0u) {
       Clear();
     }
     logger_->LogDebug(fmt::format("Circuit evaluation #{}", i));
-    EvaluateCircuit();
+    EvaluateCircuit(); // deciding je online phase e giye thakle execute sequentially. Jodi online phase e na giye thake tahole execute parallelu
   }
 }
+
+
 
 void Party::Reset() {
   backend_->Sync();
@@ -206,11 +208,84 @@ void Party::Clear() {
   backend_->Sync();
 }
 
-void Party::EvaluateCircuit() {
+void Party::EvaluateCircuit() { // jodi online hoe giye thake after setup, then run sequentially run the circuits.
   if (config_->GetOnlineAfterSetup()) {
     backend_->EvaluateSequential();
-  } else {
-    backend_->EvaluateParallel();
+  } else {   //jodi online na hoye giye thake tahole, parallely run the offline pre-processing phase
+    backend_->EvaluateParallel(); //ekhane offline setup thakte pa   gate_executor_->evaluate(run_time_stats_.back());
+                                  // inside gate_executor_->evaluate(),
+                                  /*for (auto &gate : register_.GetGates()) {  //inside GateExecutor.cpp
+                                    fpool.post([&] {
+                                      gate->EvaluateSetup();    //maps to gate class object.The Gate class has different gates according to the protocol used.
+                                      // XXX: maybe insert a 'yield' here?
+                                      gate->EvaluateOnline();
+                                    });*/
+                                    // Depending on that which protocol is being run,  Gate class will evaluate setup .
+                                    // one example
+                                    /*void GMWInputGate::EvaluateSetup() {  /// for example taking the GMWInputGate provider
+                                      get_motion_base_provider().wait_setup();
+                                      SetSetupIsReady();
+                                      GetRegister().IncrementEvaluatedGatesSetupCounter();
+                                    }*/
+                                    /*Crypto::MotionBaseProvider& Gate::get_motion_base_provider() { return backend_.get_motion_base_provider(); }*/   /// link to backend
+
+
+
+
+                                    // maps to Crypto r MotionBaseProvider files
+
+
+
+                                    /*
+                                    MotionBaseProvider::MotionBaseProvider(Communication::CommunicationLayer& communication_layer,
+                                                                           std::shared_ptr<Logger> logger)
+                                        : communication_layer_(communication_layer),
+                                          logger_(std::move(logger)),
+                                          num_parties_(communication_layer_.get_num_parties()),
+                                          my_id_(communication_layer_.get_my_id()),
+                                          my_randomness_generators_(num_parties_),
+                                          their_randomness_generators_(num_parties_),
+                                          hello_message_handler_(std::make_shared<HelloMessageHandler>(num_parties_, logger_)),
+                                          output_message_handlers_(num_parties_) {
+                                      for (std::size_t party_id = 0; party_id < num_parties_; ++party_id) {
+                                        if (party_id == my_id_) {
+                                          continue;
+                                        }
+                                        output_message_handlers_.at(party_id) =
+                                            std::make_shared<OutputMessageHandler>(party_id, nullptr);
+                                      }
+                                      // register handler
+                                      communication_layer_.register_message_handler([this](auto) { return hello_message_handler_; },
+                                                                                    {Communication::MessageType::HelloMessage});
+                                      communication_layer_.register_message_handler(
+                                          [this](std::size_t party_id) { return output_message_handlers_.at(party_id); },
+                                          {Communication::MessageType::OutputMessage});
+                                    }
+
+                                    MotionBaseProvider::~MotionBaseProvider() {
+                                      communication_layer_.deregister_message_handler(
+                                          {Communication::MessageType::HelloMessage, Communication::MessageType::OutputMessage});
+                                    }
+
+                                    void MotionBaseProvider::setup() {
+                                      bool setup_started = execute_setup_flag_.test_and_set();
+                                      if (setup_started) {
+                                        if constexpr (MOTION_DEBUG) {
+                                          if (logger_) {
+                                            logger_->LogDebug("MotionBaseProvider::setup: waiting for setup being completed");
+                                          }
+                                        }
+                                        wait_setup();
+                                        return;
+                                      }
+                                      if constexpr (MOTION_DEBUG) {
+                                        if (logger_) {
+                                          logger_->LogDebug("MotionBaseProvider::setup: running setup");
+                                        }
+                                      }*/
+
+                                      //Configuration leads to constants.h in utility
+
   }
 }
 

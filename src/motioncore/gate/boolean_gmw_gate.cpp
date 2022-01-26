@@ -119,6 +119,7 @@ void GMWInputGate::EvaluateOnline() {
         if (party_id == my_id) {
           continue;
         }
+        std::cout << "Hello2 GMWInputGate::EvaluateOnline())" << std::endl;
         auto &rand_generator = get_motion_base_provider().get_my_randomness_generator(party_id);
         auto randomness = rand_generator.GetBits(sharing_id, bits_);
 

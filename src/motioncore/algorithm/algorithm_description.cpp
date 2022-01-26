@@ -27,6 +27,7 @@
 #include <fstream>
 #include <regex>
 #include <sstream>
+#include <iostream>
 
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/lexical_cast.hpp>
@@ -80,6 +81,8 @@ AlgorithmDescription AlgorithmDescription::FromBristol(std::ifstream& stream) {
       str.clear();
     }
     algo.n_input_wires_parent_a_ = std::stoull(line_v.at(0));
+    //std::cout << "Hello BooleanBEAVYInputGateSender::evaluate_setup()" << std::endl;
+    std::cout << algo.n_input_wires_parent_a_ << std::endl;
     if (line_v.size() == 2) {
       algo.n_output_wires_ = std::stoull(line_v.at(1));
     } else if (line_v.size() == 3) {
@@ -94,6 +97,8 @@ AlgorithmDescription AlgorithmDescription::FromBristol(std::ifstream& stream) {
   }
 
   std::getline(stream, str);
+  //std::cout << str << std::endl;
+  //assert(str.empty() && str);
   assert(str.empty());
 
   // read line

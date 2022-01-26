@@ -62,9 +62,10 @@ BEAVYProvider::BEAVYProvider(Communication::CommunicationLayer& communication_la
       next_input_id_(0),
       logger_(std::move(logger)),
       fake_setup_(fake_setup) {
-  if (communication_layer.get_num_parties() != 2) {
-    throw std::logic_error("currently only two parties are supported");
-  }
+  // if (communication_layer.get_num_parties() != 2) {
+  //   throw std::logic_error("currently only two parties are supported");
+  // }
+  std::cout << "Beavy suppports multi parties now ;)" << std::endl;
 }
 
 BEAVYProvider::~BEAVYProvider() = default;

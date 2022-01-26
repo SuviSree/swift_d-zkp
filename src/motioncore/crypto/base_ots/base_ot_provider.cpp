@@ -123,7 +123,7 @@ void BaseOTProvider::ComputeBaseOTs() {
 
     auto send_function = [this, i](flatbuffers::FlatBufferBuilder &&message) {
       communication_layer_.send_message(i, std::move(message));
-    };
+    };  //sending func from the sendere in the COT
 
     auto &base_ots_data = data_.at(i);
     base_ots.emplace_back(std::make_unique<OT_HL17>(send_function, base_ots_data));

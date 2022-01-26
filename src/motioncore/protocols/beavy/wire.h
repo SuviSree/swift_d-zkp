@@ -24,7 +24,7 @@
 
 #include <memory>
 #include <vector>
-
+#include <iostream>
 #include "utility/bit_vector.h"
 #include "utility/type_traits.hpp"
 #include "utility/typedefs.h"
@@ -86,7 +86,11 @@ class ArithmeticBEAVYWire : public NewWire, public ENCRYPTO::enable_wait_setup {
 
   // holds this party shares
   std::vector<T> public_share_;
+  // std::cout << "public_share_" << std::endl;
   std::vector<T> secret_share_;
+  // std::cout << "secret_share_" << std::endl;
+  //printf
+
 };
 
 template <typename T>

@@ -50,7 +50,7 @@ class MotionBaseProvider : public ENCRYPTO::enable_wait_setup {
   MotionBaseProvider(Communication::CommunicationLayer&, std::shared_ptr<Logger> logger);
   ~MotionBaseProvider();
 
-  void setup();
+  void setup();   //
 
   const std::vector<std::uint8_t>& get_aes_fixed_key() const { return aes_fixed_key_; }
   SharingRandomnessGenerator& get_my_randomness_generator(std::size_t party_id) {

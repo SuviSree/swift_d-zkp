@@ -127,9 +127,10 @@ YaoProvider::YaoProvider(Communication::CommunicationLayer& communication_layer,
       role_((my_id_ == 0) ? Role::garbler : Role::evaluator),
       setup_ran_(false),
       logger_(std::move(logger)) {
-  if (communication_layer.get_num_parties() != 2) {
-    throw std::logic_error("Yao is a two party protocol");
-  }
+  // if (communication_layer.get_num_parties() != 2) {
+  //   throw std::logic_error("Yao is a two party protocol");
+  // }
+  std::cout << "Yao now supports 3 parties" << std::endl;
   if (role_ == Role::evaluator) {
     communication_layer_.register_message_handler([this](auto) { return message_handler_; },
                                                   {Communication::MessageType::YaoSetup});

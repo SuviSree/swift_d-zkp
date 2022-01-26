@@ -59,7 +59,7 @@ struct Options {
 std::optional<Options> parse_program_options(int argc, char* argv[]) {
   Options options;
   boost::program_options::options_description desc("Allowed options");
-  bool help;
+  bool help = false;
   // clang-format off
   desc.add_options()
     ("help,h", po::bool_switch(&help)->default_value(false),"produce help message")
@@ -80,13 +80,17 @@ std::optional<Options> parse_program_options(int argc, char* argv[]) {
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
   if (help) {
+    std::cerr << "WHATATTTTT" << std::endl;
     std::cerr << desc << "\n";
     return std::nullopt;
   }
+  std::cout << "Gan" << std::endl;
   try {
     po::notify(vm);
+    std::cout << "Gan2" << std::endl;
   } catch (std::exception& e) {
     std::cerr << e.what() << "\n\n";
+    std::cerr << "/* message */" << '\n';
     std::cerr << desc << "\n";
     return std::nullopt;
   }
@@ -110,8 +114,11 @@ std::optional<Options> parse_program_options(int argc, char* argv[]) {
   boost::algorithm::to_lower(protocol);
   if (protocol == "gmw") {
     options.protocol = MOTION::MPCProtocol::ArithmeticGMW;
+    std::cout << "inside cryptonets.cpp, gmw called" << std::endl;
+
   } else if (protocol == "beavy") {
     options.protocol = MOTION::MPCProtocol::ArithmeticBEAVY;
+    std::cout << "inside cryptonets.cpp, beavy called" << std::endl;
   } else {
     std::cerr << "invalid protocol: " << protocol << "\n";
     return std::nullopt;
@@ -260,6 +267,7 @@ void run_cryptonets(const Options& options, MOTION::TwoPartyTensorBackend& backe
 int main(int argc, char* argv[]) {
   auto options = parse_program_options(argc, argv);
   if (!options.has_value()) {
+    std::cout << "RELAX" << std::endl;
     return EXIT_FAILURE;
   }
 
@@ -268,10 +276,16 @@ int main(int argc, char* argv[]) {
     auto logger = std::make_shared<MOTION::Logger>(options->my_id,
                                                    boost::log::trivial::severity_level::trace);
     comm_layer->set_logger(logger);
+    std::cout << "TwoPartyTensorBackend gfydyjdjd" << '\n';
     MOTION::TwoPartyTensorBackend backend(*comm_layer, options->threads,
                                           options->sync_between_setup_and_online, logger);
+    std::cout << "TwoPartyTensorBackend gfydyjdj222222222222d" << '\n';
+
     run_cryptonets(*options, backend);
+    std::cout << "TwoPartyTensorBackend gfydyjdjxxxxxxxxxxxx" << '\n';
+
     comm_layer->shutdown();
+    std::cout << "whfkhfk" << std::endl;
   } catch (std::runtime_error& e) {
     std::cerr << "ERROR OCCURRED: " << e.what() << "\n";
     return EXIT_FAILURE;

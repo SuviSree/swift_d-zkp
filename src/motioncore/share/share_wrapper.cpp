@@ -46,21 +46,22 @@ namespace MOTION::Shares {
 using SharePtr = std::shared_ptr<Share>;
 
 ShareWrapper ShareWrapper::operator~() const {
-  assert(share_);
+  assert(share_); //assert is a pre-defined library func to help test values assigned
   if (share_->GetProtocol() == MPCProtocol::ArithmeticGMW) {
     throw std::runtime_error(
         "Boolean primitive operations are not supported for Arithmetic GMW shares");
   }
 
-  if (share_->GetProtocol() == MPCProtocol::BooleanGMW) {
+  if (share_->GetProtocol() == MPCProtocol::BooleanGMW) {  //Destination = Boolean GMW
     auto gmw_share = std::dynamic_pointer_cast<GMWShare>(share_);
-    assert(gmw_share);
+    assert(gmw_share); //change share to gmw_share
     auto inv_gate = std::make_shared<Gates::GMW::GMWINVGate>(gmw_share);
     share_->GetRegister()->RegisterNextGate(inv_gate);
-    return ShareWrapper(inv_gate->GetOutputAsShare());
-  } else {
+    return ShareWrapper(inv_gate->GetOutputAsShare()); // get the output of NOT gate for gmw
+  } else { //if not gmw then obviously bmr   //Destination is
     auto bmr_share = std::dynamic_pointer_cast<BMRShare>(share_);
     assert(bmr_share);
+    //not gate since can be computed locally is being computed locally by either of the parties
     auto inv_gate = std::make_shared<Gates::BMR::BMRINVGate>(bmr_share);
     share_->GetRegister()->RegisterNextGate(inv_gate);
     return ShareWrapper(inv_gate->GetOutputAsShare());
@@ -271,6 +272,8 @@ ShareWrapper ShareWrapper::operator==(const ShareWrapper &other) const {
     return result;
   }
 }
+
+//------------------------------------------------
 
 ShareWrapper ShareWrapper::MUX(const ShareWrapper &a, const ShareWrapper &b) const {
   assert(*a);

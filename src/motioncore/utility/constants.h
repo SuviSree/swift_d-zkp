@@ -55,7 +55,7 @@ constexpr std::size_t MESSAGE_SIZE_BYTELEN{sizeof(std::uint32_t)};
 constexpr std::uint32_t MAX_MESSAGE_SIZE{std::numeric_limits<std::uint32_t>::max() - 1};
 
 // symmetric security parameter
-constexpr std::size_t kappa{128};
+constexpr std::size_t kappa{128};  
 
 // stack size for fibers
 constexpr std::size_t MOTION_FIBER_STACK_SIZE{14 * 1024};

@@ -40,7 +40,7 @@ class SyncHandler : public MessageHandler {
   SyncHandler(std::size_t my_id, std::size_t num_parties, std::shared_ptr<Logger> logger)
       : my_id_(my_id),
         num_parties_(num_parties),
-        sync_states_(num_parties_, 0),
+        sync_states_(num_parties_, 0), // SUVI
         logger_(std::move(logger)) {}
   std::uint64_t increment_my_sync_state() { return ++sync_states_.at(my_id_); }
   void received_message(std::size_t party_id, std::vector<std::uint8_t>&& message) override;

@@ -113,6 +113,7 @@ class BEAVYProvider : public GateFactory,
 
   // arithmetic inputs
   std::pair<ENCRYPTO::ReusableFiberPromise<IntegerValues<std::uint8_t>>, WireVector>
+  //binding the share with the wire --- @Arithmetic
   make_arithmetic_8_input_gate_my(std::size_t input_owner, std::size_t num_simd) override;
   std::pair<ENCRYPTO::ReusableFiberPromise<IntegerValues<std::uint16_t>>, WireVector>
   make_arithmetic_16_input_gate_my(std::size_t input_owner, std::size_t num_simd) override;
