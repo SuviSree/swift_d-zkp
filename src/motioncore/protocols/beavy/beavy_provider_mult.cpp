@@ -70,6 +70,14 @@ BEAVYProvider::BEAVYProvider(Communication::CommunicationLayer& communication_la
 
 BEAVYProvider::~BEAVYProvider() = default;
 
+//-----added
+struct nop
+{
+    template <typename T>
+    void operator() (T const &) const noexcept { }
+};
+//---------added
+
 void BEAVYProvider::setup() {
   motion_base_provider_.wait_setup();
   // TODO wait for ot setup
@@ -193,12 +201,10 @@ BEAVYProvider::basic_make_arithmetic_input_gate_my(std::size_t input_owner, std:
   }
   ENCRYPTO::ReusableFiberPromise<std::vector<T>> promise;
   auto gate_id = gate_register_.get_next_gate_id();
-  //ADDED
-  // const ArithmeticBEAVYWireP<T> dummy1;
-  // const ArithmeticBEAVYWireP<T> dummy2;
-  //added
-  auto gate = std::make_unique<ArithmeticBEAVYInputGateSender<T>>(gate_id, *this, num_simd,
-                                                                  promise.get_future());
+  // ArithmeticBEAVYWireP<T> dummy1;
+  // ArithmeticBEAVYWireP<T> dummy2;
+   //auto gate=std::make_unique<ArithmeticBEAVYInputGateSender<T>>(gate_id, *this, num_simd, promise.get_future(), dummy1, dummy2);
+  auto gate=std::make_unique<ArithmeticBEAVYInputGateSender<T>>(gate_id, *this, num_simd, promise.get_future());
   auto output = gate->get_output_wire();
   gate_register_.register_gate(std::move(gate));
   return {std::move(promise), {cast_arith_wire(std::move(output))}};
@@ -228,9 +234,6 @@ WireVector BEAVYProvider::basic_make_arithmetic_input_gate_other(std::size_t inp
     throw std::logic_error("trying to create input gate for wrong party");
   }
   auto gate_id = gate_register_.get_next_gate_id();
-  //---added
-
-  //---added
   auto gate =
       std::make_unique<ArithmeticBEAVYInputGateReceiver<T>>(gate_id, *this, num_simd, input_owner);
   auto output = gate->get_output_wire();
@@ -341,7 +344,7 @@ void BEAVYProvider::make_arithmetic_output_gate_other(std::size_t output_owner,
   if (in.size() != 1) {
     throw std::logic_error("invalid number of wires for arithmetic gate");
   }
-  std::unique_ptr<NewGate> gate;
+  std::unique_ptr<NewGate> gate; //suvi
   auto gate_id = gate_register_.get_next_gate_id();
   switch (in[0]->get_bit_size()) {
     case 8: {

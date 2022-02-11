@@ -37,7 +37,7 @@
 
 #if (OPENSSL_VERSION_NUMBER < 0x1010000fL)
 static auto &EVP_MD_CTX_new = EVP_MD_CTX_create;
-static auto &EVP_MD_CTX_free = EVP_MD_CTX_destroy;
+//static auto &EVP_MD_CTX_free = EVP_MD_CTX_destroy;
 #endif
 
 #include <fmt/format.h>
@@ -109,6 +109,8 @@ class SharingRandomnessGenerator {
       return;
     }
 
+    std::cout<<"This is the place of gen of Segmentation fault"<<std::endl;
+
     initialized_condition_->Wait();
 
     auto size_in_bytes = AES_BLOCK_SIZE * (num_of_gates);
@@ -147,7 +149,7 @@ class SharingRandomnessGenerator {
     return results;
   }
 
-  ENCRYPTO::BitVector<> GetBits(const std::size_t gate_id, const std::size_t num_of_bits);
+  ENCRYPTO::BitVector<> GetBits(const std::size_t gate_id, const std::size_t num_of_bits); //for booelan gates only //not needed for us
 
   void ClearBitPool();
 
@@ -173,7 +175,7 @@ class SharingRandomnessGenerator {
       std::byte{0}};  /// Raw AES CTR nonce that is used
   /// in the left part of IV
 
-  ENCRYPTO::PRG prg_a, prg_b;
+  ENCRYPTO::PRG prg_a, prg_b; //prg_arithmetic, prg_booelan
 
   enum KeyType : uint {
     ArithmeticGMWKey = 0,

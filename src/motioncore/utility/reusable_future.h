@@ -155,6 +155,7 @@ class ReusableFuture {
     if (!shared_state_) {
       throw std::future_error(std::future_errc::no_state);
     }
+    std::cout << "Moving shared_state" << std::endl;
     return shared_state_->move();
   }
 

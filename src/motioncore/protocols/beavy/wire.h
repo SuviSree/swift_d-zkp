@@ -81,6 +81,16 @@ class ArithmeticBEAVYWire : public NewWire, public ENCRYPTO::enable_wait_setup {
   std::vector<T>& get_secret_share() { return secret_share_; };
   const std::vector<T>& get_secret_share() const { return secret_share_; };
 
+  //only for P2 -- SUVI
+  std::vector<T>& get_public_share_0() { return public_share_0; };
+  const std::vector<T>& get_public_share_0() const { return public_share_0; };
+  std::vector<T>& get_secret_share_0() { return secret_share_0; };
+  const std::vector<T>& get_secret_share_0() const { return secret_share_0; };
+  std::vector<T>& get_public_share_1() { return public_share_1; };
+  const std::vector<T>& get_public_share_1() const { return public_share_1; };
+  std::vector<T>& get_secret_share_1() { return secret_share_1; };
+  const std::vector<T>& get_secret_share_1() const { return secret_share_1; };
+
  private:
   using is_enabled_ = ENCRYPTO::is_unsigned_int_t<T>;
 
@@ -89,7 +99,12 @@ class ArithmeticBEAVYWire : public NewWire, public ENCRYPTO::enable_wait_setup {
   // std::cout << "public_share_" << std::endl;
   std::vector<T> secret_share_;
   // std::cout << "secret_share_" << std::endl;
-  //printf
+
+  // only for P2 -- SUVI
+  std::vector<T> public_share_0;
+  std::vector<T> secret_share_0;
+  std::vector<T> public_share_1;
+  std::vector<T> secret_share_1;
 
 };
 

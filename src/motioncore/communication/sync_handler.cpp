@@ -53,7 +53,10 @@ void SyncHandler::received_message(std::size_t party_id, std::vector<std::uint8_
 
 void SyncHandler::wait() {
   auto my_sync_state = sync_states_.at(my_id_);
+  // my_sync_state=5; //suvi
+  std::cout<< " in sync_handler.wait " <<"party_id= "<<my_id_<<"my_sync_state val="<<my_sync_state<<std::endl; //never comes here for party 2
   std::unique_lock lock(received_sync_states_mutex_);
+
   sync_states_cv_.wait(lock, [this, my_sync_state] {
     return std::all_of(std::begin(sync_states_), std::end(sync_states_),
                        [my_sync_state](auto s) { return s >= my_sync_state; });

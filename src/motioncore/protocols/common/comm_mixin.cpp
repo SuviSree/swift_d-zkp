@@ -69,7 +69,7 @@ struct CommMixin::GateMessageHandler : public Communication::MessageHandler {
   // [KeyType -> promise]
   std::vector<std::unordered_map<KeyType, ENCRYPTO::ReusableFiberPromise<ENCRYPTO::BitVector<>>,
                                  SizeTPairHash>>
-      bits_promises_;
+      bits_promises_; // ALANNNN
   std::vector<std::unordered_map<KeyType, ENCRYPTO::ReusableFiberPromise<ENCRYPTO::block128_vector>,
                                  SizeTPairHash>>
       blocks_promises_;
@@ -201,6 +201,11 @@ void CommMixin::GateMessageHandler::received_message(std::size_t party_id,
       return;
     }
     auto& promise_map = map_vec[party_id];
+    std::cout << "inside comm mixing: "<<"gate_id: " << gate_id << "\tmsg_num: " << msg_num << "\tParty " << party_id << std::endl;
+    // for (auto x : promise_map) {
+    //   std::cout << x.first << "  /* message */  " << x.second << std::endl;
+    // }
+    std::cout << " size of promise map inside comm_mixing " << promise_map.size() << std::endl;
     auto& promise = promise_map.at({gate_id, msg_num});
     auto ptr = reinterpret_cast<const decltype(type_tag)*>(payload->data());
     try {
@@ -534,7 +539,7 @@ template std::vector<ENCRYPTO::ReusableFiberFuture<std::vector<std::uint64_t>>>
 template <typename T>
 [[nodiscard]] ENCRYPTO::ReusableFiberFuture<std::vector<T>> CommMixin::register_for_ints_message(
     std::size_t party_id, std::size_t gate_id, std::size_t num_elements, std::size_t msg_num) {
-  assert(party_id != my_id_);
+  // assert(party_id != my_id_); //suvi // ALANNN
   auto& mh = *message_handler_;
   ENCRYPTO::ReusableFiberPromise<std::vector<T>> promise;
   ENCRYPTO::ReusableFiberFuture<std::vector<T>> future = promise.get_future();

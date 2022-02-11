@@ -203,41 +203,64 @@ auto create_composite_circuit(const Options& options, MOTION::TwoPartyBackend& b
   ENCRYPTO::ReusableFiberFuture<MOTION::IntegerValues<std::uint64_t>> output_future;
   if (options.my_id == 0) { //P0
     auto pair = gate_factory_arith.make_arithmetic_64_input_gate_my(options.my_id, 1); //P0's input gate
+    std::cout<<"APP level::" << "Party id =" << options.my_id << " func = make_arithmetic_64_input_gate_my" <<std::endl;
     input_promise = std::move(pair.first); //wait for the actual input
     input_x_arith = std::move(pair.second); // randomness of P0
     input_y_arith = gate_factory_arith.make_arithmetic_64_input_gate_other(1 - options.my_id, 1); // share of y
+    std::cout<<"APP level::" << "Party id =" << options.my_id << " func = make_arithmetic_64_input_gate_other" <<std::endl;
+
     //auto output1 = gate_factory_arith.make_binary_gate( //ONLine Phase
     //      ENCRYPTO::PrimitiveOperationType::MUL, input_x_arith, input_y_arith); //x.y
-    auto output = gate_factory_arith.make_binary_gate(
-                      ENCRYPTO::PrimitiveOperationType::ADD, input_x_arith, input_y_arith); //x.y +y
+    /*auto output = gate_factory_arith.make_binary_gate(
+                      ENCRYPTO::PrimitiveOperationType::MUL, input_x_arith, input_y_arith); //x.y +y
+                      std::cout<<"APP level::" << "Party id =" << options.my_id << " func = make_binary_gate" <<std::endl;
+
     output_future = gate_factory_arith.make_arithmetic_64_output_gate_my(MOTION::ALL_PARTIES, output); //RECONSTRUCTION
+    std::cout<<"APP level::" << "Party id =" << options.my_id << " func = make_arithmetic_64_output_gate_my" <<std::endl;*/
     // return std::make_pair(std::move(input_promise), std::move(output_future));
   } else if (options.my_id == 1){ //P1
-    input_x_arith = gate_factory_arith.make_arithmetic_64_input_gate_other(1 - options.my_id, 1); //share of x //share of P0's input //receiver er output wire
-    auto pair = gate_factory_arith.make_arithmetic_64_input_gate_my(options.my_id, 1); //make my won gate //P1's input gate
+    input_x_arith = gate_factory_arith.make_arithmetic_64_input_gate_other(1-options.my_id, 1); //share of x //share of P0's input //receiver er output wire   //RECEIVERGATE
+    std::cout<<"APP level::" << "Party id =" << options.my_id << " func = make_arithmetic_64_input_gate_other" <<std::endl;
+    auto pair = gate_factory_arith.make_arithmetic_64_input_gate_my(options.my_id, 1); //make my won gate //P1's input gate   //SENDERGATE
+    std::cout<<"APP level::" << "Party id =" << options.my_id << " func = make_arithmetic_64_input_gate_my" <<std::endl;
+
     input_promise = std::move(pair.first); //wait for my input
     input_y_arith = std::move(pair.second); //randomness of P1
     //auto output1 = gate_factory_arith.make_binary_gate( //ONLine Phase
     //      ENCRYPTO::PrimitiveOperationType::MUL, input_x_arith, input_y_arith); //x.y
-    auto output = gate_factory_arith.make_binary_gate(
-                      ENCRYPTO::PrimitiveOperationType::ADD, input_x_arith, input_y_arith);
-   output_future = gate_factory_arith.make_arithmetic_64_output_gate_my(MOTION::ALL_PARTIES, output); //RECONSTRUCTION //broadcast the result to everyone
 
    // return std::make_pair(std::move(input_promise), std::move(output_future));
   } else if (options.my_id == 2){
+
+    std::cout<<"APP level::" << "Party id =" << options.my_id << " func = make_arithmetic_64_input_gate_my" <<std::endl;
    input_x_arith = gate_factory_arith.make_arithmetic_64_input_gate_other(0, 1);
-   input_y_arith = gate_factory_arith.make_arithmetic_64_input_gate_other(1, 1);
-   auto pair = gate_factory_arith.make_arithmetic_64_input_gate_my(2, 1);
+   std::cout<<"APP level::" << "Party id =" << options.my_id << " func = make_arithmetic_64_input_gate_other" <<std::endl;
+    input_y_arith = gate_factory_arith.make_arithmetic_64_input_gate_other(1, 1);
+     auto pair = gate_factory_arith.make_arithmetic_64_input_gate_my(2, 1);
+
+   std::cout<<"APP level::" << "Party id =" << options.my_id << " func = make_arithmetic_64_input_gate_other" <<std::endl;
+
+
    input_promise = std::move(pair.first); //wait for my input
 
    //auto output = gate_factory_arith.make_binary_gate(
                      //ENCRYPTO::PrimitiveOperationType::ADD, input_x_arith, input_y_arith); //x.y +y
-   auto output = gate_factory_arith.make_binary_gate(
-        ENCRYPTO::PrimitiveOperationType::ADD, input_x_arith, input_y_arith); //x.y +y
+   /*auto output = gate_factory_arith.make_binary_gate(
+        ENCRYPTO::PrimitiveOperationType::MUL, input_x_arith, input_y_arith); //x.y +y
+        std::cout<<"APP level::" << "Party id =" << options.my_id << " func = make_binary_gate" <<std::endl;
+
 
    output_future = gate_factory_arith.make_arithmetic_64_output_gate_my(MOTION::ALL_PARTIES, output);
+   std::cout<<"APP level::" << "Party id =" << options.my_id << " func = make_arithmetic_64_output_gate_my" <<std::endl; */
+
 // return std::make_pair(std::move(input_promise), std::move(output_future));
   }
+  auto output = gate_factory_arith.make_binary_gate(
+                    ENCRYPTO::PrimitiveOperationType::MUL, input_x_arith, input_y_arith);
+ std::cout<<"APP level::" << "Party id =" << options.my_id << " func = make_binary_gate" <<std::endl;
+
+ output_future = gate_factory_arith.make_arithmetic_64_output_gate_my(MOTION::ALL_PARTIES, output); //RECONSTRUCTION //broadcast the result to everyone   //OUTPUTGATE
+ std::cout<<"APP level::" << "Party id =" << options.my_id << " func = make_arithmetic_64_output_gate_my" <<std::endl;
 
   std::cout<<"inside mill.cpp"<<"party id="<< options.my_id << "after output gate"<<std::endl;
 
@@ -264,10 +287,17 @@ std::cout<<"Composite Ciruit created"<<std::endl;
   std::cout<<"up and untill backend.run()"<<std::endl; //P0 and P1 is here
   // execute the protocol
   backend.run();
-
+  std::cout << "reached end of backend.run() for party id " << options.my_id <<std::endl;
   // retrieve the result from the future
-  auto bvs = output_future.get();
-  auto comp_result = bvs.at(0);
+  auto comp_result=0;
+  if (options.my_id !=2)
+  {
+    auto bvs = output_future.get();
+    comp_result = bvs.at(0);
+  }
+  else if (options.my_id ==2){
+      comp_result=0;
+  }
   if (!options.json) {
      std::cout << "The composite result is:- " << comp_result << std::endl;
   }
@@ -293,6 +323,7 @@ void print_stats(const Options& options,
 }
 
 int main(int argc, char* argv[]) {
+  int x = 0;
   std::cout << "/* SUVI parse? */" << '\n';
   auto options = parse_program_options(argc, argv);
   if (!options.has_value()) {
@@ -313,6 +344,8 @@ int main(int argc, char* argv[]) {
       MOTION::TwoPartyBackend backend(*comm_layer, options->threads,
                                     options->sync_between_setup_and_online, logger);
       std::cout << "/* SUVI in main after TwoPartyBackend */" << '\n';
+
+      // std::cin >> x;
       //run_circuit(*options, backend);
       //if (options->my_id == 0 || options->my_id == 1)
        run_composite_circuit(*options, backend);
@@ -320,7 +353,7 @@ int main(int argc, char* argv[]) {
       comm_layer->sync();
       comm_stats.add(comm_layer->get_transport_statistics());
       comm_layer->reset_transport_statistics();
-      //run_time_stats.add(backend.get_run_time_stats());
+      run_time_stats.add(backend.get_run_time_stats());
     }
     comm_layer->shutdown();
     print_stats(*options, run_time_stats, comm_stats);

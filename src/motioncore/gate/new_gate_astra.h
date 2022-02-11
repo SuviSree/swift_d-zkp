@@ -57,7 +57,7 @@ class NewGate : public ENCRYPTO::enable_wait_setup, public ENCRYPTO::enable_wait
   std::size_t gate_id_;
 
   //static char *secret_share_1, *secret_share_2; // 3 parties total
-  static char *secret_share_1, *secret_share_2;   //added 
+  static char *P0_key, *P1_key, *P2_key;   //added 
 
 };
 

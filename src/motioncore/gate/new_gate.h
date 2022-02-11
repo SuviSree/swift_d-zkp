@@ -47,6 +47,10 @@ class NewGate : public ENCRYPTO::enable_wait_setup, public ENCRYPTO::enable_wait
  protected:
   NewGate(std::size_t gate_id) noexcept : gate_id_(gate_id) {}
   std::size_t gate_id_;
+  //BeavyProvider()
+  //added
+  static char * P0_key, * P1_key, * P2_key;
+  //added
 };
 
 // Convert a GateClass to one that is evaluated purely during the setup phase.

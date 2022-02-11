@@ -36,8 +36,8 @@ class FiberCondition {
   FiberCondition(const std::function<bool()> f) : condition_function_(f) {}
 
   ~FiberCondition() = default;
-  FiberCondition() = delete;
-  FiberCondition(FiberCondition &) = delete;
+  //FiberCondition() = delete; //suvi
+  //FiberCondition(FiberCondition &) = delete; //suvi
 
   // checks if the condition was satisfied
   // bool operator()() {
@@ -46,8 +46,11 @@ class FiberCondition {
   // }
 
   void Wait() const {
+    // std::cout << "11234567890098765432_________________" << std::endl;
     std::unique_lock<decltype(mutex_)> lock(mutex_);
+    // std::cout << "zxcvbnm,asdfghjk++++++++++++++++++=++" << std::endl;
     condition_variable_.wait(lock, condition_function_);
+    // std::cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << std::endl;
   }
 
   template <typename Tick, typename Period>

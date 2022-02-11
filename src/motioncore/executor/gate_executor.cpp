@@ -56,6 +56,7 @@ void GateExecutor::evaluate_setup_online(Statistics::RunTimeStats &stats) {
   // evaluate the setup phase of all the gates
   for (auto &gate : register_.GetGates()) {
     fpool.post([&] { gate->EvaluateSetup(); });
+    std::cout<<"inside gate_executor, evaluate setup()"<<std::endl;
   }
   register_.GetGatesSetupDoneCondition()->Wait();
   assert(register_.GetNumOfEvaluatedGateSetups() == register_.GetTotalNumOfGates());
@@ -68,6 +69,7 @@ void GateExecutor::evaluate_setup_online(Statistics::RunTimeStats &stats) {
   // evaluate the online phase of all the gates
   for (auto &gate : register_.GetGates()) {
     fpool.post([&] { gate->EvaluateOnline(); });
+    std::cout<<"inside gate_executor, evaluate setup()"<<std::endl;
   }
   register_.GetGatesOnlineDoneCondition()->Wait();
   assert(register_.GetNumOfEvaluatedGates() == register_.GetTotalNumOfGates());

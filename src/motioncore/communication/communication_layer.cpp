@@ -62,7 +62,7 @@ struct CommunicationLayer::CommunicationLayerImpl {
 
   std::promise<void> start_promise_;
   std::shared_future<void> start_sfuture_;
-  std::atomic<bool> continue_communication_ = true;
+  std::atomic<bool> continue_communication_ = true; //suvi //may be change this to False by force after the circuit
 
   std::vector<std::unique_ptr<Transport>> transports_;
 
@@ -338,19 +338,27 @@ void CommunicationLayer::sync() {
   }
   auto& sync_handler = *impl_->sync_handler_;
   // synchronize s.t. this method cannot be executed simultaneously
+  std::cout<<"num_parties in CommunicationLayer.cpp " << num_parties_ <<std::endl;
+
+  std::cout << "YEAHHH!" << std::endl;
   std::scoped_lock lock(sync_handler.get_mutex());
   // increment counter
+  std::cout << "NOOOOOOOOOOO!" << std::endl;
   std::uint64_t new_sync_state = sync_handler.increment_my_sync_state();
+  std::cout << "MAYBE!" << std::endl;
   // broadcast sync message with counter value
   {
     const std::vector<std::uint8_t> v(
         reinterpret_cast<std::uint8_t*>(&new_sync_state),
         reinterpret_cast<std::uint8_t*>(&new_sync_state) + sizeof(new_sync_state));
     auto message_builder = BuildMessage(MessageType::SynchronizationMessage, &v);
+    std::cout << "WSSUP!" << std::endl;
     broadcast_message(std::move(message_builder));
   }
+  std::cout << "OKAYY!" << std::endl;
   // wait for N-1 sync messages with at least the same value
   sync_handler.wait();
+  std::cout << "YUP!" << std::endl;
   if constexpr (MOTION_DEBUG) {
     if (logger_) {
       logger_->LogDebug("finished synchronization");

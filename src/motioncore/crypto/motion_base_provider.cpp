@@ -111,20 +111,22 @@ MotionBaseProvider::~MotionBaseProvider() {
       {Communication::MessageType::HelloMessage, Communication::MessageType::OutputMessage});
 }
 
-void MotionBaseProvider::setup() {
-  bool setup_started = execute_setup_flag_.test_and_set();
-  if (setup_started) {
+void MotionBaseProvider::setup(int i) {
+  if (i == 0) {
+    bool setup_started = execute_setup_flag_.test_and_set();
+    if (setup_started) {
+      if constexpr (MOTION_DEBUG) {
+        if (logger_) {
+          logger_->LogDebug("MotionBaseProvider::setup: waiting for setup being completed");
+        }
+      }
+      wait_setup();
+      return;
+    }
     if constexpr (MOTION_DEBUG) {
       if (logger_) {
-        logger_->LogDebug("MotionBaseProvider::setup: waiting for setup being completed");
+        logger_->LogDebug("MotionBaseProvider::setup: running setup");
       }
-    }
-    wait_setup();
-    return;
-  }
-  if constexpr (MOTION_DEBUG) {
-    if (logger_) {
-      logger_->LogDebug("MotionBaseProvider::setup: running setup");
     }
   }
 
@@ -149,12 +151,26 @@ void MotionBaseProvider::setup() {
     if (party_id == my_id_) {
       continue;
     }
-    my_randomness_generators_.at(party_id) = std::make_unique<SharingRandomnessGenerator>(party_id);
-    my_randomness_generators_.at(party_id)->Initialize(
-        reinterpret_cast<const std::byte*>(my_seeds.at(party_id).data()));
+    // /*
+    // if (my_id_ != 2) {
+      my_randomness_generators_.at(party_id) = std::make_unique<SharingRandomnessGenerator>(party_id);
+      my_randomness_generators_.at(party_id)->Initialize(
+          reinterpret_cast<const std::byte*>(my_seeds.at(party_id).data()));
+    // }
     their_randomness_generators_.at(party_id) =
         std::make_unique<SharingRandomnessGenerator>(party_id);
   }
+/*
+  if (my_id_ == 0 || my_id_ == 1) {
+    my_randomness_generators_.at(my_id_) = std::make_unique<SharingRandomnessGenerator>(my_id_);
+    my_randomness_generators_.at(my_id_)->Initialize(
+        reinterpret_cast<const std::byte*>(my_seeds.at(1 - my_id_).data()));
+  }
+
+  if (my_id_ == 2) {
+    my_randomness_generators_.at(0) = std::make_unique<SharingRandomnessGenerator>(0);
+  }
+*/
   // receive HelloMessages from other and initialize
   for (std::size_t party_id = 0; party_id < num_parties_; ++party_id) {
     if (party_id == my_id_) {
@@ -169,11 +185,14 @@ void MotionBaseProvider::setup() {
     their_randomness_generators_.at(party_id)->Initialize(
         reinterpret_cast<const std::byte*>(their_seed.data()));
   }
-  set_setup_ready();
 
-  if constexpr (MOTION_DEBUG) {
-    if (logger_) {
-      logger_->LogDebug("MotionBaseProvider::setup: setup completed");
+  if (i == 0) {
+    set_setup_ready();
+
+    if constexpr (MOTION_DEBUG) {
+      if (logger_) {
+        logger_->LogDebug("MotionBaseProvider::setup: setup completed");
+      }
     }
   }
 }

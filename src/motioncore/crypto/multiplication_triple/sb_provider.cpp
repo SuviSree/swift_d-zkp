@@ -328,7 +328,7 @@ TwoPartySBProvider::TwoPartySBProvider(Communication::CommunicationLayer& commun
   // if (communication_layer.get_num_parties() != 2) {
   //   throw std::logic_error("TwoPartySBProvider implements a two-party protocol");
   // }
-  std::cout << "SBProvider for PARTY ID 2 " << std::endl;
+  std::cout << "SBProvider for PARTY ID ="<<communication_layer.get_my_id() << std::endl;
 }
 
 TwoPartySBProvider::~TwoPartySBProvider() = default;
