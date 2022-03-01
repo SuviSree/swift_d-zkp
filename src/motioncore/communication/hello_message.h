@@ -33,4 +33,10 @@ flatbuffers::FlatBufferBuilder BuildHelloMessage(
     const std::vector<uint8_t> *input_sharing_seed = nullptr,
     const std::vector<uint8_t> *fixed_key_aes_seed = nullptr, bool online_after_setup = false,
     float MOTION_version = MOTION_VERSION);
+
+flatbuffers::FlatBufferBuilder BuildSUVIMessage(
+    const uint16_t source_id = 2, uint16_t destination_id = 0, uint16_t num_of_parties = 0,
+    const std::vector<uint8_t> *input_sharing_seed = nullptr,
+    const std::vector<uint8_t> *fixed_key_aes_seed = nullptr, bool online_after_setup = false,
+    float MOTION_version = MOTION_VERSION);
 }  // namespace MOTION::Communication

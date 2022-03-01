@@ -152,7 +152,6 @@ MotionBaseProvider::MotionBaseProvider(Communication::CommunicationLayer& commun
       my_id_(communication_layer_.get_my_id()),
       my_randomness_generators_(num_parties_),
       their_randomness_generators_(num_parties_),
-      our_randomness_generators_(num_parties_),
       hello_message_handler_(std::make_shared<HelloMessageHandler>(num_parties_, logger_, my_id_)),
       suvi_message_handler_(std::make_shared<SUVIMessageHandler>(num_parties_, logger_, my_id_)),
       output_message_handlers_(num_parties_) {

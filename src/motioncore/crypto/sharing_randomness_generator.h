@@ -109,7 +109,7 @@ class SharingRandomnessGenerator {
       return;
     }
 
-    std::cout<<"This is the place of gen of Segmentation fault"<<std::endl;
+    //std::cout<<"This is the place of gen of Segmentation fault"<<std::endl;
 
     initialized_condition_->Wait();
 

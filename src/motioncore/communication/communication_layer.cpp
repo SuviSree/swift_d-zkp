@@ -157,6 +157,7 @@ void CommunicationLayer::CommunicationLayerImpl::send_task(std::size_t party_id)
           flatbuffers::Verifier verifier(raw_message, message_size);
           if (VerifyMessageBuffer(verifier)) {
             auto fb_message = GetMessage(raw_message);
+            // auto fb_suvi_message = GetSUVIMessage(raw_message);
             auto message_type = fb_message->message_type();
             logger_->LogDebug(fmt::format("Sent message of type {} to party {}",
                                           EnumNameMessageType(message_type), party_id));
@@ -220,8 +221,11 @@ void CommunicationLayer::CommunicationLayerImpl::receive_task(std::size_t party_
       continue;
     }
 
+
     // XXX: maybe use a separate thread for this
     auto message = GetMessage(raw_message.data());
+    //ADDED
+    // auto message2 = GetSUVIMessage(raw_message.data());
 
     auto message_type = message->message_type();
     if constexpr (MOTION_DEBUG) {

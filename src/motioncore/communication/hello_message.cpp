@@ -43,4 +43,19 @@ flatbuffers::FlatBufferBuilder BuildHelloMessage(uint16_t source_id, uint16_t de
   return BuildMessage(MessageType::HelloMessage, builder_hello_message.GetBufferPointer(),
                       builder_hello_message.GetSize());
 }
+
+flatbuffers::FlatBufferBuilder BuildSUVIMessage(uint16_t source_id, uint16_t destination_id,
+                                                 uint16_t num_of_parties,
+                                                 const std::vector<uint8_t> *input_sharing_seed,
+                                                 const std::vector<uint8_t> *fixed_key_aes_seed,
+                                                 bool online_after_setup, float MOTION_version) {
+  flatbuffers::FlatBufferBuilder builder_hello_message(256);
+  auto hello_message_root =
+      CreateHelloMessageDirect(builder_hello_message, source_id, destination_id, num_of_parties,
+                               input_sharing_seed, fixed_key_aes_seed, online_after_setup, MOTION_version);
+  FinishHelloMessageBuffer(builder_hello_message, hello_message_root);
+
+  return BuildMessage(MessageType::SUVIMessage, builder_hello_message.GetBufferPointer(),
+                      builder_hello_message.GetSize());
+}
 }

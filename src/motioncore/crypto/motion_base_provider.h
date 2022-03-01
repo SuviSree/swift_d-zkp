@@ -43,6 +43,7 @@ namespace Crypto {
 class SharingRandomnessGenerator;
 
 struct HelloMessageHandler;
+struct SUVIMessageHandler;
 class OutputMessageHandler;
 
 class MotionBaseProvider : public ENCRYPTO::enable_wait_setup {
@@ -92,7 +93,11 @@ class MotionBaseProvider : public ENCRYPTO::enable_wait_setup {
   std::vector<std::uint8_t> aes_fixed_key_;
   std::vector<std::unique_ptr<SharingRandomnessGenerator>> my_randomness_generators_;
   std::vector<std::unique_ptr<SharingRandomnessGenerator>> their_randomness_generators_;
+  //added
+  std::vector<std::unique_ptr<SharingRandomnessGenerator>> our_randomness_generators_;
+  //added
   std::shared_ptr<HelloMessageHandler> hello_message_handler_;
+  std::shared_ptr<SUVIMessageHandler> suvi_message_handler_;
   std::vector<std::shared_ptr<OutputMessageHandler>> output_message_handlers_;
   std::atomic_flag execute_setup_flag_ = ATOMIC_FLAG_INIT;
 };
