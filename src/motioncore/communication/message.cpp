@@ -76,6 +76,8 @@ std::string to_string(MessageType message_type) {
       return "MessageType::SharedBitsMask"s;
     case MessageType::SharedBitsReconstruct:
       return "MessageType::SharedBitsReconstruct"s;
+    case MessageType::SUVIMessage:
+      return "MessageType::SUVIMessage"s;
     default:
       return "Unknown MessageType => update to_string function"s;
   }

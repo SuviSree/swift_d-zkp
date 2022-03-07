@@ -1,5 +1,5 @@
 file(GLOB FBS_NAMES "${FBS_DIR_FULL_PREFIX}/*.fbs")
-#set(FBS_NAMES output_message hello_message message base_ot) #add the names of the new fbs files here
+#set(FBS_NAMES output_message hello_message message base_ot suvi_message) #add the names of the new fbs files here
 
 set(GENERATED_FILES "")
 

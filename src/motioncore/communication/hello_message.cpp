@@ -25,6 +25,7 @@
 #include "hello_message.h"
 
 #include "fbs_headers/hello_message_generated.h"
+#include "fbs_headers/suvi_message_generated.h"
 #include "message.h"
 #include "utility/typedefs.h"
 
@@ -51,9 +52,9 @@ flatbuffers::FlatBufferBuilder BuildSUVIMessage(uint16_t source_id, uint16_t des
                                                  bool online_after_setup, float MOTION_version) {
   flatbuffers::FlatBufferBuilder builder_hello_message(256);
   auto hello_message_root =
-      CreateHelloMessageDirect(builder_hello_message, source_id, destination_id, num_of_parties,
+      CreateSUVIMessageDirect(builder_hello_message, source_id, destination_id, num_of_parties,
                                input_sharing_seed, fixed_key_aes_seed, online_after_setup, MOTION_version);
-  FinishHelloMessageBuffer(builder_hello_message, hello_message_root);
+  FinishSUVIMessageBuffer(builder_hello_message, hello_message_root);
 
   return BuildMessage(MessageType::SUVIMessage, builder_hello_message.GetBufferPointer(),
                       builder_hello_message.GetSize());

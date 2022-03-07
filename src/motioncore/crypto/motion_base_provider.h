@@ -55,37 +55,24 @@ class MotionBaseProvider : public ENCRYPTO::enable_wait_setup {
 
   const std::vector<std::uint8_t>& get_aes_fixed_key() const { return aes_fixed_key_; }
   SharingRandomnessGenerator& get_my_randomness_generator(std::size_t party_id) {
-    //assert(party_id != my_id_); SUVI
-  //   for (std::size_t x = 0; x < 2; ++x) {
-  //     if (x == my_id_) {
-  //       continue;
-  //     }
-  //   std::cout << "egfjgfkghekfkfkfk   " << *my_randomness_generators_.at(x)->IsInitialized() << std::endl;
-  // }
-  // *my_randomness_generators_.at(party_id) = std::make_unique<SharingRandomnessGenerator>(party_id);
-  // my_randomness_generators_.at(party_id)->Initialize(
-  //     reinterpret_cast<const std::byte*>(my_seeds.at(party_id).data()));
-  // their_randomness_generators_.at(party_id) =
-  //     std::make_unique<SharingRandomnessGenerator>(party_id);
+
 
     return *my_randomness_generators_.at(party_id);
   }
   SharingRandomnessGenerator& get_their_randomness_generator(std::size_t party_id) {
-    //assert(party_id != my_id_); //SUVI
-  //   for (std::size_t x = 0; x < 2; ++x) {
-  //     if (x == my_id_) {
-  //       continue;
-  //     }
-  //   std::cout << "wgfdkgwslficglew   " << *their_randomness_generators_.at(x)->IsInitialized() << std::endl;
-  // }
+
     return *their_randomness_generators_.at(party_id);
   }
-  //get_my_randomness_generator2
+  SharingRandomnessGenerator& get_our_randomness_generator(std::size_t party_id) {
+
+    return *our_randomness_generators_.at(party_id);
+  }
+
 
   std::vector<ENCRYPTO::ReusableFiberFuture<std::vector<std::uint8_t>>>
   register_for_output_messages(std::size_t gate_id);
 
- private:
+private:
   Communication::CommunicationLayer& communication_layer_;
   std::shared_ptr<Logger> logger_;
   std::size_t num_parties_;

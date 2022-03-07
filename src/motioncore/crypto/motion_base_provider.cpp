@@ -24,6 +24,7 @@
 
 #include "communication/communication_layer.h"
 #include "communication/fbs_headers/hello_message_generated.h"
+#include "communication/fbs_headers/suvi_message_generated.h"
 #include "communication/fbs_headers/message_generated.h"
 #include "communication/hello_message.h"
 #include "communication/message_handler.h"
@@ -127,20 +128,15 @@ void SUVIMessageHandler::received_message(std::size_t party_id,
 
   auto* fb_vec = hello_message_ptr->input_sharing_seed(); //fb_vec will have the aes key final
 
-
-//added try catch block
-
-//implies synchronizing
-//if you do not get where you normally are suppossed to get, then go to the catch box receiving the extra seed shared
-
-std::cout << "RECEIVED MESSAGE FIRST " << party_id << std::endl;
+std::cout << "RECEIVED MESSAGE FIRST SUVI " << party_id << std::endl;
 randomness_sharing_seed_promises_.at(party_id).set_value(  //setting the received value at the desired pos of my
   std::vector(std::begin(*fb_vec), std::end(*fb_vec))); //
-std::cout << "RECEIVED MESSAGE FIRST POST " << party_id << std::endl;
+std::cout << "RECEIVED MESSAGE FIRST POST SUVI " << party_id << std::endl;
 
 fb_vec = hello_message_ptr->fixed_key_aes_seed(); //received the fixed key aes key from hello_message_ptr
 fixed_key_aes_seed_promises_.at(party_id).set_value(        //setting the fixed key aes key at the my vector of that party
     std::vector(std::begin(*fb_vec), std::end(*fb_vec)));
+std::cout << "RECEIVED MESSAGE AES KEY FIRST POST SUVI " << party_id << std::endl;
 }
 
 
@@ -152,7 +148,7 @@ MotionBaseProvider::MotionBaseProvider(Communication::CommunicationLayer& commun
       my_id_(communication_layer_.get_my_id()),
       my_randomness_generators_(num_parties_),
       their_randomness_generators_(num_parties_),
-      our_randomness_generators_(num_parties_),
+      our_randomness_generators_(num_parties_), //suvi
       hello_message_handler_(std::make_shared<HelloMessageHandler>(num_parties_, logger_, my_id_)),
       suvi_message_handler_(std::make_shared<SUVIMessageHandler>(num_parties_, logger_, my_id_)),
       output_message_handlers_(num_parties_) {
@@ -177,7 +173,7 @@ MotionBaseProvider::MotionBaseProvider(Communication::CommunicationLayer& commun
 
 MotionBaseProvider::~MotionBaseProvider() {
   communication_layer_.deregister_message_handler(
-      {Communication::MessageType::HelloMessage, Communication::MessageType::OutputMessage});
+      {Communication::MessageType::HelloMessage, Communication::MessageType::OutputMessage, Communication::MessageType::SUVIMessage});
 }
 
 void MotionBaseProvider::setup(int i) {
@@ -208,43 +204,40 @@ void MotionBaseProvider::setup(int i) {
   // prepare and send HelloMessage
   for (std::size_t party_id = 0; party_id < num_parties_; ++party_id) {
     if (party_id == my_id_) {
+      //send the 0my0 and 1my1 to 1ou0 and 2our0 respectively
+      auto msg_builder = Communication::BuildSUVIMessage(
+          my_id_, party_id, num_parties_, &my_seeds.at(party_id), &aes_fixed_key_,
+          /* TODO: config_->GetOnlineAfterSetup()*/ true, MOTION_VERSION);
+      communication_layer_.broadcast_message(std::move(msg_builder));
+      std::cout << "JUST SENT SUVI " << party_id << std::endl;
       continue;
     }
     auto msg_builder = Communication::BuildHelloMessage(
         my_id_, party_id, num_parties_, &my_seeds.at(party_id), &aes_fixed_key_,
         /* TODO: config_->GetOnlineAfterSetup()*/ true, MOTION_VERSION);
     communication_layer_.send_message(party_id, std::move(msg_builder));
-  } //communicate the fixed key that you created
-  //according to our convention, 2my2, is gonna broadcast to 0my0 AND 1my1
-  if (my_id_ == 2) { //then u communicate another fixed key
-    auto msg_builder = Communication::BuildSUVIMessage(
-        my_id_, 0, num_parties_, &my_seeds.at(my_id_), &aes_fixed_key_, //&my_seeds.at(my_id_)  party 2 er my stack er at position my_id_
-        true, MOTION_VERSION); //p2 er my seeds er 2th position er seed ta tule msg build korchi send korbo bole
-    communication_layer_.broadcast_message(std::move(msg_builder));
-    // communication_layer_.send_message(0, std::move(msg_builder));
-    // communication_layer_.send_message(1, std::move(msg_builder));
-    // auto tmp=CreateString(msg_builder);
-    std::cout<<"TEST <Motion Base Provider> :: broadcasting from Party ="<<my_id_<<std::endl;
+    std::cout << "JUST SENT HELLO " << party_id << std::endl;
 
-  //   for(int i = 0; i < tmp.size(); i++) {
-  //     std::cout <<"my_id="<< my_id_ << " msg sent = "<< tmp[i]<<" " <<std::endl;}
-  //
-  }
+  } //communicate the fixed key that you created
 
   // initialize my randomness generators
   for (std::size_t party_id = 0; party_id < num_parties_; ++party_id) {
     their_randomness_generators_.at(party_id) =
         std::make_unique<SharingRandomnessGenerator>(party_id);
+    our_randomness_generators_.at(party_id) =
+        std::make_unique<SharingRandomnessGenerator>(party_id);
 
-    if (party_id == my_id_ && my_id_ != 2) {
-      continue;
-    } // P1 er my er 1 will be uninitialised  //P0 er 0 will be uninitialised // but p2 er 2 is initialised
+    // if (party_id == my_id_) { // now we are using 0my0, 1my1, so party_id=my_id wala check cannot stay
+    //   continue;
+    // } // P1 er my er 1 will be uninitialised  //P0 er 0 will be uninitialised // but p2 er 2 is initialised
     //p2 er my er 2 will be initialised using the seed that we broadcasted
     // /*
     // if (my_id_ != 2) {
     my_randomness_generators_.at(party_id) = std::make_unique<SharingRandomnessGenerator>(party_id);
     std::cout << "\t size of my seed \t " << sizeof(my_seeds.at(party_id).data()) << "\t Party id= \t" << party_id << "\t my_id_ = \t"<< my_id_<< std::endl;
     std::cout << "INIT 1" << std::endl;
+
+
     my_randomness_generators_.at(party_id)->Initialize(
         reinterpret_cast<const std::byte*>(my_seeds.at(party_id).data()));
 
@@ -252,47 +245,38 @@ void MotionBaseProvider::setup(int i) {
 
   // receive HelloMessages from other and initialize
   for (std::size_t party_id = 0; party_id < num_parties_; ++party_id) {
-    if (party_id == my_id_) {
-          continue;
-    }
 
+      if (my_id_ == party_id)
+        continue;
+
+        //initialise 1their0 with 0my1, initialise 0their1 with 1my0, initialise 2their0 with 0my2
         auto aes_key = hello_message_handler_->fixed_key_aes_seed_futures_.at(party_id).get(); //receive the aes key
         // add received share to the fixed aes key
         std::transform(std::begin(aes_fixed_key_), std::end(aes_fixed_key_), std::begin(aes_key),
                        std::begin(aes_fixed_key_), [](auto a, auto b) { return a ^ b; });
         auto their_seed = hello_message_handler_->randomness_sharing_seed_futures_.at(party_id).get(); //receive the common seed
         // initialize randomness generator of the other party
-        std::cout << "\t size of their seed \t" << sizeof(their_seed) << "\t my_id_= \t" << my_id_ << "\t party_id= \t" <<party_id << std::endl;
-        std::cout << "INIT 2" << std::endl;
+
+
         their_randomness_generators_.at(party_id)->Initialize(
             reinterpret_cast<const std::byte*>(their_seed.data()));
-
   }
-  //
-  // for (std::size_t my_id_ = 0; my_id_ < num_parties; ++my_id_) {
-  //   std:: size_t party_id=party_id_;
-  //   if (party_id == my_id_) {
-  if (my_id_ !=2){
-        auto aes_key = suvi_message_handler_->fixed_key_aes_seed_futures_.at(my_id_).get(); //receive the common seed
-        // add received share to the fixed aes key
-        std::transform(std::begin(aes_fixed_key_), std::end(aes_fixed_key_), std::begin(aes_key),
-                       std::begin(aes_fixed_key_), [](auto a, auto b) { return a ^ b; });
 
-        auto common_seed = suvi_message_handler_->randomness_sharing_seed_futures_.at(my_id_).get(); //Segmentation Fault
-        std::cout<<"inside Motion Base Provider"<<std::endl;
-        for(int i=0; i<32; i++)
-        {
-          std::cout << (int)common_seed[i] << std::endl;
-        }
-        std::cout << "size of Common seed" << sizeof(common_seed) << std::endl;
-        std::cout << "INIT 3" << std::endl;
-        std::cout << " TEST   <MOTION Base Provider::: broadcasted by p2, received at my of party id="<<my_id_<<std::endl;
-        their_randomness_generators_.at(my_id_)->Initialize(
-            reinterpret_cast<const std::byte*>(common_seed.data()));
-    // }
-  } //END OF COMMON SEED FOR LOOP
+  for (std::size_t party_id = 0; party_id < num_parties_; ++party_id) {
+    if (my_id_ == party_id)
+      continue;
 
+    auto aes_key = suvi_message_handler_->fixed_key_aes_seed_futures_.at(party_id).get();
+    std::transform(std::begin(aes_fixed_key_), std::end(aes_fixed_key_), std::begin(aes_key),
+                   std::begin(aes_fixed_key_), [](auto a, auto b) { return a ^ b; });
 
+    auto our_seed = suvi_message_handler_->randomness_sharing_seed_futures_.at(party_id).get();
+
+    std::cout << "____________________________________________________Gonna INITIALIZE " << party_id << "\t" << sizeof(our_seed.data()) << std::endl;
+
+    our_randomness_generators_.at(party_id)->Initialize(
+      reinterpret_cast<const std::byte*>(our_seed.data()));
+  }
 
   std::cout << "INIT 4" << std::endl;
 

@@ -61,6 +61,7 @@ class ReusableSharedState {
       // construct R from argument in the allocated value_storage
       new (&value_storage_) R(std::forward<Arg>(arg));
       contains_value_ = true;
+      std::cout << "REUSABLESHAREDSTATE SET VALUE " << contains_value_ << std::endl;
     }
     cv_.notify_all();
   }
@@ -95,7 +96,8 @@ class ReusableSharedState {
     return contains_value_;
   }
 
- private:
+ private:// -- changed
+// protected:
   // storage for the value
   std::aligned_storage_t<sizeof(R), std::alignment_of_v<R>> value_storage_;
 
@@ -108,9 +110,15 @@ class ReusableSharedState {
 
   // helper functions
   void wait_helper(std::unique_lock<decltype(mutex_)>& lock) const noexcept {
+    // contains_value
+    // contains_value_ = 1; //added --------------------------------
+    std::cout << "REUSABLESHAREDSTATE WAIT_HELPER " << contains_value_  << std::endl;
+    // std::cout << "XXXXXXXXXXXXXXXXss" << " " << contains_value() << std::endl;
+    // contains_value_ = contains_value();
     if (!contains_value_) {
       cv_.wait(lock, [this] { return contains_value_; });
     }
+    std::cout << "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR POSTTTTTT" << std::endl;
   }
 
   // delete the stored object
