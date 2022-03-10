@@ -1058,17 +1058,33 @@ namespace detail {
 
 template <typename T>
 BasicArithmeticBEAVYBinaryGate<T>::BasicArithmeticBEAVYBinaryGate(std::size_t gate_id,
-                                                                  BEAVYProvider&,
+                                                                  BEAVYProvider& ,
                                                                   ArithmeticBEAVYWireP<T>&& in_a,
                                                                   ArithmeticBEAVYWireP<T>&& in_b)
     : NewGate(gate_id),
+      // beavy_provider_(beavy_provider),
       input_a_(std::move(in_a)),
       input_b_(std::move(in_b)),
       output_(std::make_shared<ArithmeticBEAVYWire<T>>(input_a_->get_num_simd())) {
   if (input_a_->get_num_simd() != input_b_->get_num_simd()) {
     throw std::logic_error("number of SIMD values need to be the same for all wires");
   }
+  auto num_simd = this->input_a_->get_num_simd();
 }
+// template <typename T>
+// void BasicArithmeticBEAVYBinaryGate<T>::evaluate_setup() {
+//   std::cout<<"\n TEST inside ArithmeticBEAVYMULGate<T>::evaluate_setup \n"<<std::endl;
+//   auto num_simd = this->input_a_->get_num_simd();
+//   auto my_id = beavy_provider_.get_my_id();
+//
+//   //test
+//   auto& mbp = beavy_provider_.get_motion_base_provider();
+//   auto& rng3 = mbp.get_their_randomness_generator(my_id);
+//   auto my_secret_share=rng3.GetUnsigned<T>(this->gate_id_, num_simd);   //x0 //y1
+//   for(int i = 0; i < my_secret_share.size(); i++) {
+//     std::cout <<"\n \t ABCD ----------------------------------------------------- MULT ----- TEST my_id= \t "<< my_id << "\t TEST MY Randomness GENERATOR in MULT gate \t "<< my_secret_share[i]<<" " <<std::endl;
+//   }
+// }
 
 template class BasicArithmeticBEAVYBinaryGate<std::uint8_t>;
 template class BasicArithmeticBEAVYBinaryGate<std::uint16_t>;
@@ -1191,7 +1207,7 @@ void ArithmeticBEAVYADDGate<T>::evaluate_setup() {
 
 
 //DEBUG
-  std::cout<<"\n"<<"inside void ArithmeticBEAVYADDGate<T>::evaluate_setup() {" <<std::endl;
+  std::cout<<"\n"<<" TEST inside void ArithmeticBEAVYADDGate<T>::evaluate_setup() {" <<std::endl;
 
   for(int i = 0; i < this->input_a_->get_secret_share().size(); i++) {
     std::cout << " this->input_a_->get_secret_share() lambdax0 for party 0, lambdax1 for party 1  = "<< this->input_a_->get_secret_share()[i]<<" " <<std::endl;
@@ -1348,195 +1364,224 @@ void ArithmeticBEAVYMULGate<T>::evaluate_setup() { // ALANNN
           fmt::format("Gate {}: ArithmeticBEAVYMULGate<T>::evaluate_setup start", this->gate_id_));
     }
   }
-  std::cout<<"\n inside ArithmeticBEAVYMULGate<T>::evaluate_setup \n"<<std::endl;
+  std::cout<<"\n TEST inside ArithmeticBEAVYMULGate<T>::evaluate_setup \n"<<std::endl;
   auto num_simd = this->input_a_->get_num_simd();
   auto my_id = beavy_provider_.get_my_id();
+  auto& mbp = beavy_provider_.get_motion_base_provider();
 
-  if(my_id!=2){
+  if(my_id==0){
 
-    if(my_id==0){
-          auto& rng0 = AES128_CTR_RNG::get_thread_instance(); // JOINT key b/w P2 and P0
-          std::size_t length=1; //for 1st party, only 2 shares are needed
-          const auto byte_size = sizeof(T) * length;
-          std::vector<T> vec1(length);
-          rng0.random_bytes(reinterpret_cast<std::byte*>(vec1.data()), byte_size);
-
-
-
-
-          this->output_->get_secret_share()=vec1;
-          for(int i = 0; i < this->output_->get_secret_share().size(); i++) {
-            std::cout <<"my_id="<< my_id << " lambdaz1 "<< this->output_->get_secret_share()[i]<<" " <<std::endl;
+          auto& rng3 = mbp.get_my_randomness_generator(2);
+          this->output_->get_secret_share()=rng3.GetUnsigned<T>(this->gate_id_, num_simd_);
+          std::cout <<"\n \t ABCDE ----------------------------------------------------- MULT ----- TEST my_id= \t "<< my_id << "\t TEST MY Randomness GENERATOR in MULT gate \t "<< this->output_->get_secret_share().size()<<" " <<std::endl;
+            for(int i = 0; i < this->output_->get_secret_share().size(); i++) {
+            std::cout <<"\n \t ABCD1 ----------------------------------------------------- MULT ----- TEST my_id= \t "<< my_id << "\t TEST MY Randomness GENERATOR in MULT gate \t "<< this->output_->get_secret_share()[i]<<" " <<std::endl;
           }
+          std::cout << " \t Test GetUnsigned " <<std::endl; //eta print hoche.
+          //but size 0 thakar jonno, upor nich duto kei by pass kore diche
+          for(int i=0; i< rng3.GetUnsigned<T>(this->gate_id_, num_simd_).size(); i++){
+            std::cout <<"\n \t ABCD2 ----------------------------------------------------- MULT ----- TEST my_id= \t "<< my_id << "\t TEST MY Randomness GENERATOR in MULT gate \t "<< rng3.GetUnsigned<T>(this->gate_id_, num_simd_)[i]<<" " <<std::endl;
+          }
+   }
+   if(my_id==2)
+   {
+         auto& rng4 = mbp.get_their_randomness_generator(0);
+         this->output_->get_secret_share()=rng4.GetUnsigned<T>(this->gate_id_, num_simd_);
+         std::cout <<"\n \t ABCDE ----------------------------------------------------- MULT ----- TEST my_id= \t "<< my_id << "\t TEST MY Randomness GENERATOR in MULT gate \t "<< this->output_->get_secret_share().size()<<" " <<std::endl;
+           for(int i = 0; i < this->output_->get_secret_share().size(); i++) {
+           std::cout <<"\n \t ABCD ----------------------------------------------------- MULT ----- TEST my_id= \t "<< my_id << "\t TEST MY Randomness GENERATOR in MULT gate \t "<< this->output_->get_secret_share()[i]<<" " <<std::endl;
+         }
+   }
 
-          std::cout<<" inside gate.cpp "<<" my id "<<my_id<<" gate_id "<<this->gate_id_ <<std::endl;
-          beavy_provider_.send_ints_message(2, this->gate_id_, this->output_->get_secret_share()); //lambdaz1 sent to P2
-
-          // this->output_->set_setup_ready();
-
-    }
-    else if (my_id==1){
-      auto& rng2 = AES128_CTR_RNG::get_thread_instance(); // JOINT key b/w P2 and P0
-      std::size_t length=1; //for 1st party, only 2 shares are needed
-      const auto byte_size = sizeof(T) * length;
-      std::vector<T> vec3(length);
-      rng2.random_bytes(reinterpret_cast<std::byte*>(vec3.data()), byte_size);
-
-      this->output_->get_secret_share()=vec3; //lambdaz2
-      for(int i = 0; i < this->output_->get_secret_share().size(); i++) {
-        std::cout <<"my_id="<< my_id << " lambdaz2 "<< this->output_->get_secret_share()[i]<<" " <<std::endl;
-      }
-      std::cout<<" inside gate.cpp "<<" my id "<<my_id<<" gate_id "<<this->gate_id_ <<std::endl;
-      beavy_provider_.send_ints_message(2, this->gate_id_, this->output_->get_secret_share()); //lambdaz2 sent to P2
-
-      // this->output_->set_setup_ready();
-
-
-}
-}else if(my_id==2){ //P0 in ASTRA
-
-              this->output_->get_secret_share_0()=share_futures_[0].get(); //put lambdaz1 in get_secret_share_0() label of o??utput wire of p2
-
-              for(int i = 0; i < this->output_->get_secret_share_0().size(); i++) {
-                  std::cout <<"my_id= "<< my_id << "Received from P0 lambdaz1 = "<< this->output_->get_secret_share_0()[i]<<" " <<std::endl;
-              }
-
-              this->output_->get_secret_share_1() =share_futures_[1].get(); //lambdaz2
-              for(int i = 0; i < this->output_->get_secret_share_1().size(); i++) {
-                  std::cout <<"my_id= "<< my_id << "Received from P1 lambdaz2 = "<< this->output_->get_secret_share_1()[i]<<" " <<std::endl;
-                }
-
-                std::transform(std::begin(this->output_->get_secret_share_0()),
-                               std::end(this->output_->get_secret_share_0()),
-                               std::begin(this->output_->get_secret_share_1()),
-                               std::begin(this->output_->get_secret_share()), std::plus{}); // lambaz1 + lambdaz2 = lambdaz // this should be in the output wire of the p2
-
-               for(int i = 0; i < this->output_->get_secret_share().size(); i++) {
-                   std::cout <<"my_id= "<< my_id << " lambdaz=lambdaz1 + lambdaz2 = "<< this->output_->get_secret_share()[i]<<" " <<std::endl;
-                 }
-
-
-                 // this->output_->set_setup_ready();
-
-
-
-              auto& rng = AES128_CTR_RNG::get_thread_instance(); // JOINT key b/w P2 and P0
-              std::size_t length=1; //for 1st party, only 2 shares are needed
-              const auto byte_size = sizeof(T) * length;
-              std::vector<T> vec5(length);
-              rng.random_bytes(reinterpret_cast<std::byte*>(vec5.data()), byte_size);
-
-              std::vector<T> vec2(length);
-              rng.random_bytes(reinterpret_cast<std::byte*>(vec2.data()), byte_size); //vec2 is gammaxy1
-
-
-
-                //gammaxy1
-                this->output_->get_public_share_0()=vec2;
-                for(int i = 0; i < this->output_->get_public_share_0().size(); i++) {
-                    std::cout <<"my_id= "<< my_id << "in p2, gammaxy1 = "<< this->output_->get_public_share_0()[i]<<" " <<std::endl;
-                  }
-
-
-
-
-
-
-
-
-
-
-              std::cout<<"\n"<<std::endl;
-              for(int i = 0; i < this->input_a_->get_secret_share_0().size(); i++) {
-                std::cout << " lambdax0  = "<< this->input_a_->get_secret_share_0()[i]<<" " <<std::endl;
-              }
-              for(int i = 0; i < this->input_b_->get_public_share_1().size(); i++) {
-                std::cout << " lambday0  = "<< this->input_b_->get_public_share_1()[i]<<" " <<std::endl;
-              }
-              for(int i = 0; i < this->input_a_->get_public_share_0().size(); i++) {
-                std::cout << " lambdax1  = "<< this->input_a_->get_public_share_0()[i]<<" " <<std::endl;
-              }
-              for(int i = 0; i < this->input_b_->get_secret_share_1().size(); i++) {
-                std::cout << " lambday1  = "<< this->input_b_->get_secret_share_1()[i]<<" " <<std::endl;
-              }
-              std::cout<<"\n"<<std::endl;
-
-                //Lambda_x0  + Lambda_x1 = Lambda_x
-                // auto delta_ab_share1= this->input_a_->get_secret_share_0(); //TEMPORARY ASSIGNMENT
-                std::transform(std::begin(this->input_a_->get_secret_share_0()),
-                               std::end(this->input_a_->get_secret_share_0()),
-                               std::begin(this->input_a_->get_public_share_0()),
-                               std::begin(this->output_->get_public_share()), std::plus{}); //lambdax
-                               //Lambda_y0 + Lambda_y1 = Lambda_y
-
-                               for(int i = 0; i < this->output_->get_public_share().size(); i++) {
-                                 std::cout << " lambdax  = "<< this->output_->get_public_share()[i]<<" " <<std::endl;
-                               }
-                               std::cout<<"\n"<<std::endl;
-
-                               std::transform(std::begin(this->input_b_->get_secret_share_1()),
-                                              std::end(this->input_b_->get_secret_share_1()),
-                                              std::begin(this->input_b_->get_public_share_1()),
-                                              std::begin(this->output_->get_secret_share()), std::plus{}); //lambday
-                                              for(int i = 0; i < this->output_->get_secret_share().size(); i++) {
-                                                std::cout << " lambday  = "<< this->output_->get_secret_share()[i]<<" " <<std::endl;
-                                              }
-                                              std::cout<<"\n"<<std::endl;
-
-                                              std::transform(std::begin(this->output_->get_public_share()),
-                                                             std::end(this->output_->get_public_share()),
-                                                             std::begin(this->output_->get_secret_share()), //lambday
-                                                             std::begin(this->output_->get_public_share()), std::multiplies{}); // gammaxy
-
-                                                             for(int i = 0; i < this->output_->get_public_share().size(); i++) {
-                                                               std::cout << " Gammaxy  = "<< this->output_->get_public_share()[i]<<" " <<std::endl;
-                                                             }
-                                                             std::cout<<"\n"<<std::endl;
-
-
-
-              //gammaxy2= gammaxy - gammaxy1
-               std::transform(std::begin(this->output_->get_public_share()), //gammaxy
-                              std::end(this->output_->get_public_share()),
-                              std::begin(this->output_->get_public_share_0()), //gammaxy1
-                              std::begin(this->output_->get_public_share()), std::minus{}); // lambdaxy2
-
-              for(int i = 0; i < this->output_->get_public_share().size(); i++) {
-                std::cout << " Gammaxy2  = "<< this->output_->get_public_share()[i]<<" " <<std::endl;
-              }
-              std::cout<<"\n"<<std::endl;
-              std::cout<<" inside gate.cpp "<<" my id "<<my_id<<" gate_id "<<this->gate_id_ <<std::endl;
-            beavy_provider_.send_ints_message(0, this->gate_id_-1, this->output_->get_public_share_0()); //gammaxy1 sent to P0
-            beavy_provider_.send_ints_message(1, this->gate_id_-1, this->output_->get_public_share()); //gammaxy2 sent to P1
-
-            //-----------------------------------------executes till here------------------------------
-
-  }//end of p2
-      std::cout<< "inside mult setup, this->output_->set_setup_ready(); for \t party id \t" << my_id <<std::endl;
-
-      this->output_->set_setup_ready();
-
-      if(my_id==0 || my_id==1){
-          this->input_a_->wait_setup();
-          this->input_b_->wait_setup();
-
-          const auto& delta_a_share = this->input_a_->get_secret_share(); //lambdax1 or lambdax2
-          const auto& delta_b_share = this->input_b_->get_secret_share(); //lambday1 or lambday2s
-          const auto& delta_y_share = this->output_->get_secret_share(); //lambdaz1 or lambdaz2
-
-          // auto delta_ab_share1=this->output_->get_secret_share(); //Dummy initialization;
-          // auto delta_ab_share2=this->output_->get_secret_share(); //Dummy initialization; //for me this part is in online phase
-
-          //p0 and p1 er eta
-           Delta_y_share_.resize(num_simd);
-           // [Delta_y]_i = [delta_a]_i * [delta_b]_i
-          // std::transform(std::begin(delta_a_share), std::end(delta_a_share), std::begin(delta_b_share),
-          //                std::begin(Delta_y_share_), std::multiplies{});
-                         // [Delta_y]_i += [delta_y]_i
-           std::transform(std::begin(Delta_y_share_), std::end(Delta_y_share_), std::begin(delta_y_share),
-                          std::begin(Delta_y_share_), std::plus{}); //lambdaz1 or lambdaz2 added to Delta_y_share
-
-      }
+//
+//
+//
+//
+//   if(my_id!=2){
+//
+//     if(my_id==0){
+//           auto& rng0 = AES128_CTR_RNG::get_thread_instance(); // JOINT key b/w P2 and P0
+//           std::size_t length=1; //for 1st party, only 2 shares are needed
+//           const auto byte_size = sizeof(T) * length;
+//           std::vector<T> vec1(length);
+//           rng0.random_bytes(reinterpret_cast<std::byte*>(vec1.data()), byte_size);
+//
+//
+//
+//
+//           this->output_->get_secret_share()=vec1;
+//           for(int i = 0; i < this->output_->get_secret_share().size(); i++) {
+//             std::cout <<"my_id="<< my_id << " TEST lambdaz1 "<< this->output_->get_secret_share()[i]<<" " <<std::endl;
+//           }
+//
+//           std::cout<<" inside gate.cpp "<<" my id "<<my_id<<" gate_id "<<this->gate_id_ <<std::endl;
+//           beavy_provider_.send_ints_message(2, this->gate_id_, this->output_->get_secret_share()); //lambdaz1 sent to P2
+//
+//           // this->output_->set_setup_ready();
+//
+//     }
+//     else if (my_id==1){
+//       auto& rng2 = AES128_CTR_RNG::get_thread_instance(); // JOINT key b/w P2 and P0
+//       std::size_t length=1; //for 1st party, only 2 shares are needed
+//       const auto byte_size = sizeof(T) * length;
+//       std::vector<T> vec3(length);
+//       rng2.random_bytes(reinterpret_cast<std::byte*>(vec3.data()), byte_size);
+//
+//       this->output_->get_secret_share()=vec3; //lambdaz2
+//       for(int i = 0; i < this->output_->get_secret_share().size(); i++) {
+//         std::cout <<"my_id="<< my_id << " lambdaz2 "<< this->output_->get_secret_share()[i]<<" " <<std::endl;
+//       }
+//       std::cout<<" inside gate.cpp "<<" my id "<<my_id<<" gate_id "<<this->gate_id_ <<std::endl;
+//       beavy_provider_.send_ints_message(2, this->gate_id_, this->output_->get_secret_share()); //lambdaz2 sent to P2
+//
+//       // this->output_->set_setup_ready();
+//
+//
+// }
+// }else if(my_id==2){ //P0 in ASTRA
+//
+//               this->output_->get_secret_share_0()=share_futures_[0].get(); //put lambdaz1 in get_secret_share_0() label of o??utput wire of p2
+//
+//               for(int i = 0; i < this->output_->get_secret_share_0().size(); i++) {
+//                   std::cout <<"my_id= "<< my_id << "Received from P0 lambdaz1 = "<< this->output_->get_secret_share_0()[i]<<" " <<std::endl;
+//               }
+//
+//               this->output_->get_secret_share_1() =share_futures_[1].get(); //lambdaz2
+//               for(int i = 0; i < this->output_->get_secret_share_1().size(); i++) {
+//                   std::cout <<"my_id= "<< my_id << "Received from P1 lambdaz2 = "<< this->output_->get_secret_share_1()[i]<<" " <<std::endl;
+//                 }
+//
+//                 std::transform(std::begin(this->output_->get_secret_share_0()),
+//                                std::end(this->output_->get_secret_share_0()),
+//                                std::begin(this->output_->get_secret_share_1()),
+//                                std::begin(this->output_->get_secret_share()), std::plus{}); // lambaz1 + lambdaz2 = lambdaz // this should be in the output wire of the p2
+//
+//                for(int i = 0; i < this->output_->get_secret_share().size(); i++) {
+//                    std::cout <<"my_id= "<< my_id << " lambdaz=lambdaz1 + lambdaz2 = "<< this->output_->get_secret_share()[i]<<" " <<std::endl;
+//                  }
+//
+//
+//                  // this->output_->set_setup_ready();
+//
+//
+//
+//               auto& rng = AES128_CTR_RNG::get_thread_instance(); // JOINT key b/w P2 and P0
+//               std::size_t length=1; //for 1st party, only 2 shares are needed
+//               const auto byte_size = sizeof(T) * length;
+//               std::vector<T> vec5(length);
+//               rng.random_bytes(reinterpret_cast<std::byte*>(vec5.data()), byte_size);
+//
+//               std::vector<T> vec2(length);
+//               rng.random_bytes(reinterpret_cast<std::byte*>(vec2.data()), byte_size); //vec2 is gammaxy1
+//
+//
+//
+//                 //gammaxy1
+//                 this->output_->get_public_share_0()=vec2;
+//                 for(int i = 0; i < this->output_->get_public_share_0().size(); i++) {
+//                     std::cout <<"my_id= "<< my_id << "in p2, gammaxy1 = "<< this->output_->get_public_share_0()[i]<<" " <<std::endl;
+//                   }
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//               std::cout<<"\n"<<std::endl;
+//               for(int i = 0; i < this->input_a_->get_secret_share_0().size(); i++) {
+//                 std::cout << " lambdax0  = "<< this->input_a_->get_secret_share_0()[i]<<" " <<std::endl;
+//               }
+//               for(int i = 0; i < this->input_b_->get_public_share_1().size(); i++) {
+//                 std::cout << " lambday0  = "<< this->input_b_->get_public_share_1()[i]<<" " <<std::endl;
+//               }
+//               for(int i = 0; i < this->input_a_->get_public_share_0().size(); i++) {
+//                 std::cout << " lambdax1  = "<< this->input_a_->get_public_share_0()[i]<<" " <<std::endl;
+//               }
+//               for(int i = 0; i < this->input_b_->get_secret_share_1().size(); i++) {
+//                 std::cout << " lambday1  = "<< this->input_b_->get_secret_share_1()[i]<<" " <<std::endl;
+//               }
+//               std::cout<<"\n"<<std::endl;
+//
+//                 //Lambda_x0  + Lambda_x1 = Lambda_x
+//                 // auto delta_ab_share1= this->input_a_->get_secret_share_0(); //TEMPORARY ASSIGNMENT
+//                 std::transform(std::begin(this->input_a_->get_secret_share_0()),
+//                                std::end(this->input_a_->get_secret_share_0()),
+//                                std::begin(this->input_a_->get_public_share_0()),
+//                                std::begin(this->output_->get_public_share()), std::plus{}); //lambdax
+//                                //Lambda_y0 + Lambda_y1 = Lambda_y
+//
+//                                for(int i = 0; i < this->output_->get_public_share().size(); i++) {
+//                                  std::cout << " lambdax  = "<< this->output_->get_public_share()[i]<<" " <<std::endl;
+//                                }
+//                                std::cout<<"\n"<<std::endl;
+//
+//                                std::transform(std::begin(this->input_b_->get_secret_share_1()),
+//                                               std::end(this->input_b_->get_secret_share_1()),
+//                                               std::begin(this->input_b_->get_public_share_1()),
+//                                               std::begin(this->output_->get_secret_share()), std::plus{}); //lambday
+//                                               for(int i = 0; i < this->output_->get_secret_share().size(); i++) {
+//                                                 std::cout << " lambday  = "<< this->output_->get_secret_share()[i]<<" " <<std::endl;
+//                                               }
+//                                               std::cout<<"\n"<<std::endl;
+//
+//                                               std::transform(std::begin(this->output_->get_public_share()),
+//                                                              std::end(this->output_->get_public_share()),
+//                                                              std::begin(this->output_->get_secret_share()), //lambday
+//                                                              std::begin(this->output_->get_public_share()), std::multiplies{}); // gammaxy
+//
+//                                                              for(int i = 0; i < this->output_->get_public_share().size(); i++) {
+//                                                                std::cout << " Gammaxy  = "<< this->output_->get_public_share()[i]<<" " <<std::endl;
+//                                                              }
+//                                                              std::cout<<"\n"<<std::endl;
+//
+//
+//
+//               //gammaxy2= gammaxy - gammaxy1
+//                std::transform(std::begin(this->output_->get_public_share()), //gammaxy
+//                               std::end(this->output_->get_public_share()),
+//                               std::begin(this->output_->get_public_share_0()), //gammaxy1
+//                               std::begin(this->output_->get_public_share()), std::minus{}); // lambdaxy2
+//
+//               for(int i = 0; i < this->output_->get_public_share().size(); i++) {
+//                 std::cout << " Gammaxy2  = "<< this->output_->get_public_share()[i]<<" " <<std::endl;
+//               }
+//               std::cout<<"\n"<<std::endl;
+//               std::cout<<" inside gate.cpp "<<" my id "<<my_id<<" gate_id "<<this->gate_id_ <<std::endl;
+//             beavy_provider_.send_ints_message(0, this->gate_id_-1, this->output_->get_public_share_0()); //gammaxy1 sent to P0
+//             beavy_provider_.send_ints_message(1, this->gate_id_-1, this->output_->get_public_share()); //gammaxy2 sent to P1
+//
+//             //-----------------------------------------executes till here------------------------------
+//
+//   }//end of p2
+//       std::cout<< "inside mult setup, this->output_->set_setup_ready(); for \t party id \t" << my_id <<std::endl;
+//
+//       this->output_->set_setup_ready();
+//
+//       if(my_id==0 || my_id==1){
+//           this->input_a_->wait_setup();
+//           this->input_b_->wait_setup();
+//
+//           const auto& delta_a_share = this->input_a_->get_secret_share(); //lambdax1 or lambdax2
+//           const auto& delta_b_share = this->input_b_->get_secret_share(); //lambday1 or lambday2s
+//           const auto& delta_y_share = this->output_->get_secret_share(); //lambdaz1 or lambdaz2
+//
+//           // auto delta_ab_share1=this->output_->get_secret_share(); //Dummy initialization;
+//           // auto delta_ab_share2=this->output_->get_secret_share(); //Dummy initialization; //for me this part is in online phase
+//
+//           //p0 and p1 er eta
+//            Delta_y_share_.resize(num_simd);
+//            // [Delta_y]_i = [delta_a]_i * [delta_b]_i
+//           // std::transform(std::begin(delta_a_share), std::end(delta_a_share), std::begin(delta_b_share),
+//           //                std::begin(Delta_y_share_), std::multiplies{});
+//                          // [Delta_y]_i += [delta_y]_i
+//            std::transform(std::begin(Delta_y_share_), std::end(Delta_y_share_), std::begin(delta_y_share),
+//                           std::begin(Delta_y_share_), std::plus{}); //lambdaz1 or lambdaz2 added to Delta_y_share
+//
+//       }
 
 
   if constexpr (MOTION_VERBOSE_DEBUG) {

@@ -294,12 +294,18 @@ class ArithmeticBEAVYOutputShareGate : public NewGate {
 
 namespace detail {
 
+  // namespace Crypto {
+  // class MotionBaseProvider;
+  // }  // namespace Crypto
+
 template <typename T>
 class BasicArithmeticBEAVYBinaryGate : public NewGate {
  public:
   BasicArithmeticBEAVYBinaryGate(std::size_t gate_id, BEAVYProvider&, ArithmeticBEAVYWireP<T>&&,
                                  ArithmeticBEAVYWireP<T>&&);
   ArithmeticBEAVYWireP<T>& get_output_wire() noexcept { return output_; }
+  // void evaluate_setup() override; //added
+
   //added
   //void Pass(int party_id, std::size_t num_simd, std::size_t input_id_);
   //added
@@ -309,6 +315,7 @@ class BasicArithmeticBEAVYBinaryGate : public NewGate {
   const ArithmeticBEAVYWireP<T> input_a_;
   const ArithmeticBEAVYWireP<T> input_b_;
   ArithmeticBEAVYWireP<T> output_;
+  // BEAVYProvider& beavy_provider_;
 };
 
 template <typename T>

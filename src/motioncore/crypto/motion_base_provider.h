@@ -72,7 +72,8 @@ class MotionBaseProvider : public ENCRYPTO::enable_wait_setup {
   std::vector<ENCRYPTO::ReusableFiberFuture<std::vector<std::uint8_t>>>
   register_for_output_messages(std::size_t gate_id);
 
-private:
+//private:
+public:
   Communication::CommunicationLayer& communication_layer_;
   std::shared_ptr<Logger> logger_;
   std::size_t num_parties_;
