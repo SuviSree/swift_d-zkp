@@ -1373,21 +1373,18 @@ void ArithmeticBEAVYMULGate<T>::evaluate_setup() { // ALANNN
 
           auto& rng3 = mbp.get_my_randomness_generator(2);
           this->output_->get_secret_share()=rng3.GetUnsigned<T>(this->gate_id_, num_simd_);
-          std::cout <<"\n \t ABCDE ----------------------------------------------------- MULT ----- TEST my_id= \t "<< my_id << "\t TEST MY Randomness GENERATOR in MULT gate \t "<< this->output_->get_secret_share().size()<<" " <<std::endl;
+          std::cout <<"\n \t ABCDE ----------------------------------------------------- MULT ----- TEST my_id= \t "<< my_id << "\t TEST MY Randomness GENERATOR in MULT gate \t "<< sizeof(this->output_->get_secret_share())<<" " <<std::endl;
             for(int i = 0; i < this->output_->get_secret_share().size(); i++) {
             std::cout <<"\n \t ABCD1 ----------------------------------------------------- MULT ----- TEST my_id= \t "<< my_id << "\t TEST MY Randomness GENERATOR in MULT gate \t "<< this->output_->get_secret_share()[i]<<" " <<std::endl;
           }
-          std::cout << " \t Test GetUnsigned " <<std::endl; //eta print hoche.
-          //but size 0 thakar jonno, upor nich duto kei by pass kore diche
-          for(int i=0; i< rng3.GetUnsigned<T>(this->gate_id_, num_simd_).size(); i++){
-            std::cout <<"\n \t ABCD2 ----------------------------------------------------- MULT ----- TEST my_id= \t "<< my_id << "\t TEST MY Randomness GENERATOR in MULT gate \t "<< rng3.GetUnsigned<T>(this->gate_id_, num_simd_)[i]<<" " <<std::endl;
-          }
+
    }
    if(my_id==2)
    {
          auto& rng4 = mbp.get_their_randomness_generator(0);
          this->output_->get_secret_share()=rng4.GetUnsigned<T>(this->gate_id_, num_simd_);
          std::cout <<"\n \t ABCDE ----------------------------------------------------- MULT ----- TEST my_id= \t "<< my_id << "\t TEST MY Randomness GENERATOR in MULT gate \t "<< this->output_->get_secret_share().size()<<" " <<std::endl;
+         std::cout <<"\n \t ABCDE234 ----------------------------------------------------- MULT ----- TEST my_id= \t "<< my_id << "\t TEST MY Randomness GENERATOR in MULT gate \t "<< sizeof(this->output_->get_secret_share())<<" " <<std::endl;
            for(int i = 0; i < this->output_->get_secret_share().size(); i++) {
            std::cout <<"\n \t ABCD ----------------------------------------------------- MULT ----- TEST my_id= \t "<< my_id << "\t TEST MY Randomness GENERATOR in MULT gate \t "<< this->output_->get_secret_share()[i]<<" " <<std::endl;
          }

@@ -67,7 +67,7 @@ struct HelloMessageHandler : public Communication::MessageHandler {
   std::vector<ENCRYPTO::ReusablePromise<std::vector<std::uint8_t>>>
       randomness_sharing_seed_promises_;  //added //made it a vector of vector
   std::vector<ENCRYPTO::ReusableFuture<std::vector<std::uint8_t>>>  randomness_sharing_seed_futures_; //added //made it a vector of vector
-}; //end of HelloMessageHandler struct
+};
 
 // Handler for messages of type HelloMessage
 struct SUVIMessageHandler : public Communication::MessageHandler {
@@ -100,7 +100,7 @@ struct SUVIMessageHandler : public Communication::MessageHandler {
   std::vector<ENCRYPTO::ReusablePromise<std::vector<std::uint8_t>>>
       randomness_sharing_seed_promises_;  //added //made it a vector of vector
   std::vector<ENCRYPTO::ReusableFuture<std::vector<std::uint8_t>>>  randomness_sharing_seed_futures_; //added //made it a vector of vector
-}; //end of SUVIMessageHandler Struct
+};
 
 void HelloMessageHandler::received_message(std::size_t party_id,
                                            std::vector<std::uint8_t>&& hello_message) {
@@ -118,7 +118,7 @@ void HelloMessageHandler::received_message(std::size_t party_id,
     fb_vec = hello_message_ptr->fixed_key_aes_seed(); //received the fixed key aes key from hello_message_ptr
     fixed_key_aes_seed_promises_.at(party_id).set_value(        //setting the fixed key aes key at the my vector of that party
         std::vector(std::begin(*fb_vec), std::end(*fb_vec)));
-} //defining received_message fucntion of HelloMessageHandler struct
+}
 
 void SUVIMessageHandler::received_message(std::size_t party_id,
                                            std::vector<std::uint8_t>&& hello_message) {
@@ -137,7 +137,7 @@ fb_vec = hello_message_ptr->fixed_key_aes_seed(); //received the fixed key aes k
 fixed_key_aes_seed_promises_.at(party_id).set_value(        //setting the fixed key aes key at the my vector of that party
     std::vector(std::begin(*fb_vec), std::end(*fb_vec)));
 std::cout << "RECEIVED MESSAGE AES KEY FIRST POST SUVI " << party_id << std::endl;
-} //defining received_message fucntion of SUVIMessageHandler struct
+}
 
 
 MotionBaseProvider::MotionBaseProvider(Communication::CommunicationLayer& communication_layer,
@@ -169,14 +169,13 @@ MotionBaseProvider::MotionBaseProvider(Communication::CommunicationLayer& commun
   communication_layer_.register_message_handler(
       [this](std::size_t party_id) { return output_message_handlers_.at(party_id); },
       {Communication::MessageType::OutputMessage});
-} //end of cosnructor of MotionBaseProvider
+}
 
 MotionBaseProvider::~MotionBaseProvider() {
   communication_layer_.deregister_message_handler(
       {Communication::MessageType::HelloMessage, Communication::MessageType::OutputMessage, Communication::MessageType::SUVIMessage});
 }
 
-//function under MotionBaseProvider class
 void MotionBaseProvider::setup(int i) {
   if (i == 0) {
     bool setup_started = execute_setup_flag_.test_and_set();
@@ -221,7 +220,6 @@ void MotionBaseProvider::setup(int i) {
 
   } //communicate the fixed key that you created
 
-    //make_unique returns an object of unique_ptr 
   // initialize my randomness generators
   for (std::size_t party_id = 0; party_id < num_parties_; ++party_id) {
     their_randomness_generators_.at(party_id) =
