@@ -90,6 +90,18 @@ class ArithmeticBEAVYWire : public NewWire, public ENCRYPTO::enable_wait_setup {
   const std::vector<T>& get_public_share_1() const { return public_share_1; };
   std::vector<T>& get_secret_share_1() { return secret_share_1; };
   const std::vector<T>& get_secret_share_1() const { return secret_share_1; };
+  std::vector<T>& get_secret_share_2() { return secret_share_2; };
+  const std::vector<T>& get_secret_share_2() const { return secret_share_2; };
+  std::vector<T>& get_public_share_2() { return public_share_2; };
+  const std::vector<T>& get_public_share_2() const { return public_share_2; };
+  std::vector<T>& get_secret_share_3() { return secret_share_3; };
+  const std::vector<T>& get_secret_share_3() const { return secret_share_3; };
+  std::vector<T>& get_public_share_3() { return public_share_3; };
+  const std::vector<T>& get_public_share_3() const { return public_share_3; };
+  std::vector<T>& get_secret_share_4() { return secret_share_4; };
+  const std::vector<T>& get_secret_share_4() const { return secret_share_4; };
+  std::vector<T>& get_public_share_4() { return public_share_4; };
+  const std::vector<T>& get_public_share_4() const { return public_share_4; };
 
  private:
   using is_enabled_ = ENCRYPTO::is_unsigned_int_t<T>;
@@ -105,6 +117,13 @@ class ArithmeticBEAVYWire : public NewWire, public ENCRYPTO::enable_wait_setup {
   std::vector<T> secret_share_0;
   std::vector<T> public_share_1;
   std::vector<T> secret_share_1;
+  std::vector<T> secret_share_2;
+  std::vector<T> public_share_2;
+  std::vector<T> secret_share_3;
+  std::vector<T> public_share_3;
+  std::vector<T> secret_share_4;
+  std::vector<T> public_share_4;
+
 
 };
 

@@ -53,8 +53,6 @@
 #include <NTL/GF2.h>  //F_2
 #include <NTL/GF2X.h>
 #include <NTL/vec_GF2.h>
-#define MAX64 std::numeric_limits<uint64_t>::max()
-
 
 namespace MOTION::proto::beavy {
 
@@ -565,7 +563,6 @@ void ArithmeticBEAVYInputGateSender<T>::evaluate_setup() {
   }
   std::cout <<" INVOKED ArithmeticBEAVYInputGateSender<T>::evaluate_setup() "<< gate_id_ <<std::endl;
   auto my_id = beavy_provider_.get_my_id();
-  // std::cout<< "\n===========MAX value of uint64_t -----------\n"<<std::numeric_limits<uint64_t>::max()<<std::endl;
 
   auto num_parties = beavy_provider_.get_num_parties();
   auto& mbp = beavy_provider_.get_motion_base_provider();
@@ -689,8 +686,8 @@ void ArithmeticBEAVYInputGateSender<T>::evaluate_online() {
   std::cout <<" void ArithmeticBEAVYInputGateSender<T>::evaluate_online()"<<" " <<std::endl;
 
   if (my_id==2){
-  //   std::cout << "GATE ID ++++++++++++++++++++++++++++++++++++++++ " << gate_id_ << std::endl;
-  //   beavy_provider_.joint_send_verify_ints_message(0,1,2, input_id_, input, num_simd_, 1);
+    std::cout << "GATE ID ++++++++++++++++++++++++++++++++++++++++ " << gate_id_ << std::endl;
+    beavy_provider_.joint_send_verify_ints_message(0,1,2, input_id_, input, num_simd_, 1);
     output_->set_online_ready();
     return;
   }
@@ -710,24 +707,23 @@ void ArithmeticBEAVYInputGateSender<T>::evaluate_online() {
     // beavy_provider_.broadcast_ints_message(gate_id_, my_public_share);
 
     beavy_provider_.send_ints_message(1-my_id, gate_id_, my_public_share); //send m_v to the other party
-    beavy_provider_.send_ints_message(2, gate_id_, my_public_share);
 
-    // if (my_id == 0) {
-    //   std::cout << "GATE_ID " << gate_id_ << std::endl;
-    //   std::cout << "GATE ID ++++++++++++++++++++++++++++++++++++++++ " << gate_id_ << std::endl;
-    //     beavy_provider_.joint_send_verify_ints_message(0,1,2, input_id_, my_public_share, num_simd_, 1);
-    // } else if (my_id == 1) {
-    //     std::cout << "GATE ID ++++++++++++++++++++++++++++++++++++++++ " << gate_id_ << std::endl;
-    //     beavy_provider_.joint_send_verify_ints_message(0,1,2, input_id_, my_public_share, num_simd_, 2);
-    // }
+    if (my_id == 0) {
+      std::cout << "GATE_ID " << gate_id_ << std::endl;
+      std::cout << "GATE ID ++++++++++++++++++++++++++++++++++++++++ " << gate_id_ << std::endl;
+        beavy_provider_.joint_send_verify_ints_message(0,1,2, input_id_, input, num_simd_, 1);
+    } else if (my_id == 1) {
+        std::cout << "GATE ID ++++++++++++++++++++++++++++++++++++++++ " << gate_id_ << std::endl;
+        beavy_provider_.joint_send_verify_ints_message(0,1,2, input_id_, input, num_simd_, 2);
+    }
     // }else if (my_id==2){
-    //   beavy_provider_.joint_send_verify_ints_message(0,1,2, gate_id_-1, my_public_share, num_simd_, 1);
+    //   beavy_provider_.joint_send_verify_ints_message(0,1,2, gate_id_-1, input, num_simd_, 1);
     //   // return;
     //   output_->set_online_ready();
     //
     // }
     // beavy_provider_.DIZK( output_->get_public_share(), output_->get_public_share());
-    //
+
 
     output_->set_online_ready();
 
@@ -763,9 +759,7 @@ ArithmeticBEAVYInputGateReceiver<T>::ArithmeticBEAVYInputGateReceiver(std::size_
       output_(std::make_shared<ArithmeticBEAVYWire<T>>(num_simd))  {
         // if(beavy_provider_.get_my_id()==2){
         if(beavy_provider_.get_my_id()==2){
-          // share_futures_ = beavy_provider_.register_for_ints_messages<T>( input_id_, num_simd);
-          public_share_future2_ =
-              beavy_provider_.register_for_ints_message<T>(input_owner_, input_id_, num_simd); //this is a vector
+          share_futures_ = beavy_provider_.register_for_ints_messages<T>( input_id_, num_simd); //this is a vector
 
         }else if (beavy_provider_.get_my_id()==0 || beavy_provider_.get_my_id()==1){
           public_share_future_ =
@@ -820,7 +814,7 @@ void ArithmeticBEAVYInputGateReceiver<T>::evaluate_setup() {
           }
           for(int i = 0; i < output_->get_secret_share_2().size(); i++) {
             // beavy_provider_.broadcast_ints_message(input_id_+1, output_->get_secret_share());
-            std::cout <<" Receiver Fucntion:: my_id="<< my_id <<" input_owner_="<<input_owner_<< " lambda_y2 received == "<< output_->get_secret_share_2()[i]<<" " <<std::endl;
+            std::cout <<" Receiver Fucntion:: my_id="<< my_id <<" input_owner_="<<input_owner_<< " gamma_y received == "<< output_->get_secret_share_2()[i]<<" " <<std::endl;
           }
         }
     }
@@ -892,14 +886,6 @@ void ArithmeticBEAVYInputGateReceiver<T>::evaluate_online() {
 
   std::size_t my_id = beavy_provider_.get_my_id();
   if (my_id==2){
-    if(input_owner_==0){
-      output_->get_public_share_3() = public_share_future2_.get();
-      std::cout<<" p2 receives public share "<<output_->get_public_share_3()[0]<<std::endl;}
-    else if (input_owner_==1){
-      output_->get_public_share() = public_share_future2_.get();
-      std::cout<<" p2 receives public share "<<output_->get_public_share()[0]<<std::endl;}
-
-    output_->set_online_ready();
     return;
   }
 
@@ -939,14 +925,9 @@ ArithmeticBEAVYOutputGate<T>::ArithmeticBEAVYOutputGate(std::size_t gate_id,
       input_(std::move(input)) {
   std::size_t my_id = beavy_provider_.get_my_id();
 
-  if (my_id==0){
-      share_future0_=beavy_provider_.register_for_ints_message<T>(1, gate_id_, input_->get_num_simd(),1);
-  }
-  else if(my_id==1){
-    share_future1_=beavy_provider_.register_for_ints_message<T>(0, gate_id_, input_->get_num_simd(),1);
-  }
-  else if(my_id==2){
-    share_future2_=beavy_provider_.register_for_ints_message<T>(0, gate_id_, input_->get_num_simd(),1);
+  if (output_owner_ == ALL_PARTIES || output_owner_ == my_id) {
+    share_future_ =
+        beavy_provider_.register_for_ints_message<T>(my_id == 2 ? 2 : 1 - my_id, gate_id_, input_->get_num_simd());
   }
 }
 
@@ -975,52 +956,27 @@ void ArithmeticBEAVYOutputGate<T>::evaluate_setup() {
 
   std::size_t my_id = beavy_provider_.get_my_id();
     std::cout<<"inside ArithmeticBEAVYOutputGate<T>::evaluate_setup()" <<std::endl;
-
-
-
   if (output_owner_ != my_id) {
     input_->wait_setup();
     std::cout<<"---------------------waiting on input setup-----------------"<<std::endl;
     auto my_secret_share = input_->get_secret_share();
-    //================================test========================================
-    if(my_id==0){
-      std::cout<< " O/p gate:: lambda_z0 input_->get_secret_share_3() " <<input_->get_secret_share_3()[0]<<std::endl;
-      std::cout<< " O/p gate:: lambda_z2 input_->get_public_share_3() " <<input_->get_public_share_3()[0]<<std::endl;
-      beavy_provider_.send_ints_message(1, gate_id_, input_->get_secret_share_3() , 1);
-      beavy_provider_.send_ints_message(2, gate_id_, input_->get_public_share_3() , 1);
+    if (output_owner_ == ALL_PARTIES) {
+      beavy_provider_.broadcast_ints_message(gate_id_, my_secret_share); //if reconstruction is sending to all parties, broadcast your secret share to everyone
+      for(int i=0; i<my_secret_share.size(); i++){
+            std::cout<< "inside output gate, my_secret_share value=  "<<my_secret_share[i]  <<std::endl;
+      }
 
+      } else {
+      beavy_provider_.joint_send_verify_ints_message(0,2,1, gate_id_, my_secret_share,1, 1 );
+      std::cout<<"inside output gate, JSend" <<std::endl;
+      beavy_provider_.joint_send_verify_ints_message(0,2,1, gate_id_, my_secret_share,1, 1 );
+      beavy_provider_.joint_send_verify_ints_message(0,1,2, gate_id_, my_secret_share,1, 1 );
+      //beavy_provider_.send_ints_message(output_owner_, gate_id_, my_secret_share); //if reconstruction is being done by 1 party, send to that party
     }
-    else if(my_id==1){
-      std::cout<< " O/p gate:: lambda_z1 input_->get_secret_share_3() " <<input_->get_secret_share_3()[0]<<std::endl;
-      std::cout<< " O/p gate:: lambda_z2 input_->get_public_share_3() " <<input_->get_public_share_3()[0]<<std::endl;
-
-      beavy_provider_.send_ints_message(0, gate_id_, input_->get_secret_share_3() , 1);
-
-
+    for(int i = 0; i < my_secret_share.size(); i++) {
+      std::cout <<"my_id="<< my_id << " my_secret_share= lambdaz0 lambdaz1"<< my_secret_share[i]<<" " <<std::endl;
     }
-    else if(my_id ==2){
-      std::cout<< " O/p gate:: lambda_z0 input_->get_secret_share_3() " <<input_->get_secret_share_3()[0]<<std::endl;
-      std::cout<< " O/p gate:: lambda_z1 input_->get_public_share_3()" <<input_->get_public_share_3()[0]<<std::endl;
-
-    }
-    // //======================================test======================================
-    //   if (output_owner_ == ALL_PARTIES) {
-    //       beavy_provider_.broadcast_ints_message(gate_id_, my_secret_share); //if reconstruction is sending to all parties, broadcast your secret share to everyone
-    //       for(int i=0; i<my_secret_share.size(); i++){
-    //             std::cout<< "inside output gate, my_secret_share value=  "<<my_secret_share[i]  <<std::endl;
-    //       }
-    //
-    //   } else {
-    //     beavy_provider_.joint_send_verify_ints_message(0,2,1, gate_id_, my_secret_share,1, 1 );
-    //     std::cout<<"inside output gate, JSend" <<std::endl;
-    //     beavy_provider_.joint_send_verify_ints_message(0,2,1, gate_id_, my_secret_share,1, 1 );
-    //     beavy_provider_.joint_send_verify_ints_message(0,1,2, gate_id_, my_secret_share,1, 1 );
-    //     //beavy_provider_.send_ints_message(output_owner_, gate_id_, my_secret_share); //if reconstruction is being done by 1 party, send to that party
-    //   }
-    //   for(int i = 0; i < my_secret_share.size(); i++) {
-    //     std::cout <<"my_id="<< my_id << " my_secret_share= lambdaz0 lambdaz1"<< my_secret_share[i]<<" " <<std::endl;
-    //   }
-    //   std::cout<<"\n"<<std::endl;
+    std::cout<<"\n"<<std::endl;
   }
 
 
@@ -1045,54 +1001,45 @@ void ArithmeticBEAVYOutputGate<T>::evaluate_online() {
 
 
   std::size_t my_id = beavy_provider_.get_my_id();
-
+  if (my_id==2){
+    std::cout<<"\n no output gate online phase for p2 \n "<<std::endl;
+    std::size_t last_mult_gate_id=2;
+    beavy_provider_.DIZK_verify(last_mult_gate_id);
+    return;
+  }
   std::cout<<"inside ArithmeticBEAVYOutputGate<T>::evaluate_online()" <<std::endl;
   if (output_owner_ == ALL_PARTIES || output_owner_ == my_id) {
     input_->wait_setup();
-    std::vector<T> total_mask(1);
-    std::vector<T> og_val(1);
-    if(my_id==0){
-       auto lambda_z1=share_future0_.get();
-       std::cout<<" O/P online:: lambda_z0 "<<input_->get_secret_share_3()[0]<<std::endl;
-       std::cout<<" O/P Online:: lambda_z1 "<<lambda_z1[0]<<std::endl;
-       std::cout<<" O/P online:: lambda_z2 "<<input_->get_public_share_3()[0]<<std::endl;
-       std::transform(std::begin(input_->get_secret_share_3()), std::end(input_->get_secret_share_3()),
-                      std::begin(lambda_z1), std::begin(total_mask), std::plus{});
-      std::transform(std::begin(total_mask), std::end(total_mask),
-                     std::begin(input_->get_public_share_3()), std::begin(total_mask), std::plus{});
-    }else if(my_id==1){
-      auto lambda_z0=share_future1_.get();
-      std::cout<<" O/P online:: lambda_z0 "<<lambda_z0[0]<<std::endl;
-      std::cout<<" O/P Online:: lambda_z1 "<<input_->get_secret_share_3()[0]<<std::endl;
-      std::cout<<" O/P online:: lambda_z2 "<<input_->get_public_share_3()[0]<<std::endl;
-      std::transform(std::begin(input_->get_secret_share_3()), std::end(input_->get_secret_share_3()),
-                     std::begin(lambda_z0), std::begin(total_mask), std::plus{});
-     std::transform(std::begin(total_mask), std::end(total_mask),
-                    std::begin(input_->get_public_share_3()), std::begin(total_mask), std::plus{});
-    }else if(my_id==2){
-      auto lambda_z2=share_future1_.get();
-      std::cout<<" O/P online:: lambda_z0 "<<input_->get_secret_share_3()[0]<<std::endl;
-      std::cout<<" O/P Online:: lambda_z1 "<<input_->get_public_share_3()[0]<<std::endl;
-      std::cout<<" O/P online:: lambda_z2 "<<lambda_z2[0]<<std::endl;
-      std::transform(std::begin(input_->get_secret_share_3()), std::end(input_->get_secret_share_3()),
-                     std::begin(lambda_z2), std::begin(total_mask), std::plus{});
-     std::transform(std::begin(total_mask), std::end(total_mask),
-                    std::begin(input_->get_public_share_3()), std::begin(total_mask), std::plus{});
-                    return;
-    }
+    // constitutes v = mv- lambdav1 - lambdav2 - lambdav3;
+    auto my_secret_share = input_->get_secret_share();
+    const auto other_secret_share = share_future_.get();
+    std::transform(std::begin(my_secret_share), std::end(my_secret_share),
+                   std::begin(other_secret_share), std::begin(my_secret_share), std::plus{}); // lambda x0 + lambdax1 = lambdax
     input_->wait_online();
+    //input_->get_public_share --- this is mv
+
+    //v=mv-lambda_v1- lambdav2- lambdav3
+
     std::transform(std::begin(input_->get_public_share()), std::end(input_->get_public_share()),
-                   std::begin(total_mask), std::begin(og_val), std::minus{});
-    std::cout<< " O/P gate:: og_val"<<og_val[0]<<std::endl;
-    output_promise_.set_value(std::move(og_val));
-    // for(int i = 0; i < my_secret_share.size(); i++) {
-    //   std::cout <<"my_id="<< my_id << " input_->get_public_share my_secret_share= "<< my_secret_share[i]<<" " <<std::endl;
-    // }
-    // for(int i = 0; i < my_secret_share.size(); i++) {
-    //   std::cout <<"my_id="<< my_id << " my_secret_share= "<< my_secret_share[i]<<" " <<std::endl;
-    // }
-    //
-    // std::cout<<"value set in output promise"<<"\n"<<std::endl;
+                   std::begin(my_secret_share), std::begin(my_secret_share), std::minus{});
+    output_promise_.set_value(std::move(my_secret_share));
+    for(int i = 0; i < my_secret_share.size(); i++) {
+      std::cout <<"my_id="<< my_id << " input_->get_public_share my_secret_share= "<< my_secret_share[i]<<" " <<std::endl;
+    }
+    for(int i = 0; i < my_secret_share.size(); i++) {
+      std::cout <<"my_id="<< my_id << " my_secret_share= "<< my_secret_share[i]<<" " <<std::endl;
+    }
+
+    std::cout<<"value set in output promise"<<"\n"<<std::endl;
+
+    // if (_numgatesshared == NUMMULGATES) {
+    //   std::size_t last_mult_gate_id=gate_id;
+      // beavy_provider_.initiali();
+
+      //OG
+      std::size_t last_mult_gate_id=2;
+      beavy_provider_.DIZK_verify(last_mult_gate_id);
+
   }
 
 
@@ -1416,24 +1363,16 @@ ArithmeticBEAVYMULGate<T>::ArithmeticBEAVYMULGate(std::size_t gate_id,
   auto num_simd = this->input_a_->get_num_simd();
   if (my_id==0){
     std::cout << "ALANNNNNNNNNN REG " << this->gate_id_ << std::endl;
-      share_future0_=beavy_provider_.register_for_ints_message<T>(1, this->gate_id_, this->input_a_->get_num_simd(),1);
-      share_future00_=beavy_provider_.register_for_ints_message<T>(1, this->gate_id_, this->input_a_->get_num_simd(),2);
-      share_future01_=beavy_provider_.register_for_ints_message<T>(1, this->gate_id_, this->input_a_->get_num_simd(),3);
-
-
+      share_future0_=beavy_provider_.register_for_ints_message<T>(2, this->gate_id_, this->input_a_->get_num_simd());
   }
   else if(my_id==1){
     std::cout << "ALANNNNNNNNNN REG " << this->gate_id_ << std::endl;
-    share_future1_=beavy_provider_.register_for_ints_message<T>(2, this->gate_id_, this->input_a_->get_num_simd(),1);
-    share_future11_=beavy_provider_.register_for_ints_message<T>(0, this->gate_id_, this->input_a_->get_num_simd(),2);
-    share_future10_=beavy_provider_.register_for_ints_message<T>(0, this->gate_id_, this->input_a_->get_num_simd(),3);
+    share_future1_=beavy_provider_.register_for_ints_message<T>(0, this->gate_id_, this->input_a_->get_num_simd());
   }
   else if(my_id==2){
     std::cout << "ALANNNNNNNNNN REG " << this->gate_id_ << std::endl;
-    share_future2_=beavy_provider_.register_for_ints_message<T>(0, this->gate_id_ - 1, this->input_a_->get_num_simd(),1);
-
+    share_future2_=beavy_provider_.register_for_ints_message<T>(1, this->gate_id_ - 1, this->input_a_->get_num_simd());
   }
-
 
 
 
@@ -1452,518 +1391,641 @@ void ArithmeticBEAVYMULGate<T>::evaluate_setup() { // SUVI
                 fmt::format("Gate {}: ArithmeticBEAVYMULGate<T>::evaluate_setup start", this->gate_id_));
           }
         }
-    std::cout<<"\n TEST inside ArithmeticBEAVYMULGate<T>::evaluate_setup"<<std::endl;
-    num_simd_ = this->input_a_->get_num_simd();
-    this->input_a_->wait_setup();
-    this->input_b_->wait_setup();
-    auto my_id = beavy_provider_.get_my_id();
-    auto& mbp = beavy_provider_.get_motion_base_provider();
-    std::vector<T> MAX64v;
-    MAX64v.push_back(MAX64);
-    if(my_id==0){
-      //===============================TEST===================================
-      lambda_x0.push_back(this->input_a_->get_secret_share()[0]);
-      std::cout <<"my_id="<< my_id << " MULT Lambda_x0 = v1 "<< this->input_a_->get_secret_share()[0]<< " Lambda_x0 "<< lambda_x0[0] <<std::endl;
-      lambda_y0.push_back(this->input_b_->get_secret_share()[0]);
-      std::cout <<"my_id="<< my_id << " MULT Lambda_y0 = u1 "<< this->input_b_->get_secret_share()[0]<< " lambda_y0 "<< lambda_y0[0] <<std::endl;
-      lambda_x2.push_back(this->input_a_->get_public_share_2()[0]);
-      std::cout <<"my_id="<< my_id << "MULT lambda_x2 = v2 "<< this->input_a_->get_public_share_2()[0]<<" lambda_x2 "<<lambda_x2[0] <<std::endl;
-      lambda_y2.push_back(this->input_b_->get_secret_share_2()[0]);
-      std::cout <<"my_id="<< my_id << " MULT lambda_y2 = u2 "<< this->input_b_->get_secret_share_2()[0]<<" lambda_y2 "<<lambda_y2[0] <<std::endl;
-
-      std::cout<< " retrieved (2,3) SS of lambda_a lambda_b --------" <<std::endl;
-      //============common between P0 and P2===========================
-      auto& rng3 = mbp.get_my_randomness_generator(2);
-      auto tmp2=rng3.GetUnsigned<T>(this->gate_id_, 3);
-      auto& rng9 = mbp.get_my_randomness_generator(my_id); //only for p0
-      auto tmp9=rng9.GetUnsigned<T>(this->gate_id_, 1);
-      std::vector<T> r02; //r0
-      std::vector<T> p02; //p0
-      std::vector<T> row02; //row0
-      r02.push_back(tmp2[0]); //r0
-      p02.push_back(tmp9[0]);
-      row02.push_back(tmp2[2]);
-      std::cout<<" yoyo r0="<<r02[0]<<std::endl;
-      std::cout<<" yoyo p0="<<p02[0]<<std::endl;
-      std::cout<<" yoyo row0="<<row02[0]<<std::endl;
-      this->output_->get_secret_share_0().push_back(r02[0]);// storing r0
-      this->output_->get_public_share_0().push_back(p02[0]); //lambda_p0
-      this->output_->get_public_share_0().resize(this->input_a_->get_num_simd());
-      this->output_->get_secret_share_3().resize(this->input_a_->get_num_simd());
-      std::vector<T> neg;
-      // MAX64v.resize(this->input_a_->get_num_simd());
-      // r02.resize(this->input_a_->get_num_simd());
-      neg.resize(this->input_a_->get_num_simd());
-      this->output_->get_public_share_0().resize(this->input_a_->get_num_simd());
-      this->output_->get_secret_share_3().resize(this->input_a_->get_num_simd());
-      std::transform(std::begin(MAX64v),
-              std::end(MAX64v),
-              std::begin(r02),
-              std::begin(neg), std::minus{});
-      neg[0]=neg[0]+1; //neg=Lambda_r0
-
-      std::transform(std::begin(neg),
-              std::end(neg),
-              std::begin(this->output_->get_public_share_0()),
-              std::begin(this->output_->get_secret_share_3()), std::plus{});
-     std::cout <<"my_id="<< my_id << " MULT lambda_z0  "<< this->output_->get_secret_share_3()[0]<<" " <<std::endl;
-     //=================================Common between P0 and p1
-     auto& rng7 = mbp.get_my_randomness_generator(1);
-     auto tmp3=rng7.GetUnsigned<T>(this->gate_id_, 3);
-     auto& rng99 = mbp.get_our_randomness_generator(1);
-     auto tmp99=rng99.GetUnsigned<T>(this->gate_id_, 1);
-     std::vector<T> p11;
-     std::vector<T> r01;
-     std::vector<T> p01;
-     std::vector<T> row01;
-     r01.push_back(tmp3[0]);
-     p01.push_back(tmp3[1]);
-     row01.push_back(tmp3[2]);
-     p11.push_back(tmp99[0]);
-     std::cout<<" yoyo r2="<<r01[0]<<std::endl;
-     std::cout<<" yoyo p2="<<p01[0]<<std::endl;
-     std::cout<<" yoyo p1="<<p11[0]<<std::endl;
-     std::cout<<" yoyo row2="<<row01[0]<<std::endl;
-     this->output_->get_secret_share_1().push_back(r01[0]); //r2
-     this->output_->get_public_share_1().push_back(p01[0]); //lambda_p2
-     this->output_->get_secret_share_4().push_back(p11[0]); //lambda_p1
-     this->output_->get_public_share_1().resize(this->input_a_->get_num_simd());
-     this->output_->get_public_share_3().resize(this->input_a_->get_num_simd());
-     std::vector<T> neg1;
-     MAX64v.resize(this->input_a_->get_num_simd());
-     r01.resize(this->input_a_->get_num_simd());
-     neg1.resize(this->input_a_->get_num_simd());
-     std::transform(std::begin(MAX64v),
-             std::end(MAX64v),
-             std::begin(r01),
-             std::begin(neg1), std::minus{});
-     neg1[0]=neg1[0]+1; //neg=lambda_r2
-     std::transform(std::begin(neg1),
-             std::end(neg1),
-             std::begin(this->output_->get_public_share_1()),
-             std::begin(this->output_->get_public_share_3()), std::plus{});
-    std::cout <<"my_id="<< my_id << " MULT lambda_z2 "<< this->output_->get_public_share_3()[0]<<" " <<std::endl;
-
-     //=================================end of common between p0 and p1
-     std::cout<<"\n ----------------start of MULT of DIZK------------------------ \n"<<std::endl;
-     std::vector<T> u1;
-     std::vector<T> u2;
-     std::vector<T> v1;
-     std::vector<T> v2;
-     v1.push_back(lambda_x0[0]);
-     v2.push_back(lambda_x2[0]);
-     u1.push_back(lambda_y0[0]);
-     u2.push_back(lambda_y2[0]);
-     std::vector<T> alpha0(num_simd_);
-     std::transform(std::begin(row02),
-            std::end(row02),
-            std::begin(row01),
-            std::begin(alpha0), std::minus{}); // alpha0= row0-row2;
-    std::cout<<" MULT alpha0 ="<<alpha0[0]<<std::endl;
-    std::vector<T> term1(1);
-    std::vector<T> term2(1);
-    std::vector<T> term3(1);
-    std::vector<T> term4(1);
-    std::vector<T> term5(1);
-    std::vector<T> z0(1);
-    std::transform(std::begin(u1),
-           std::end(u1),
-           std::begin(v1),
-           std::begin(term1), std::multiplies{}); // u1.v1
-   std::cout<<" u1 "<<u1[0]<<" v1 "<<v1[0]<< " u1.v1 "<< term1[0]<<std::endl;
-   std::transform(std::begin(u1),
-           std::end(u1),
-           std::begin(v2),
-           std::begin(term2), std::multiplies{}); // u1.v2
-  std::cout<<" u1 "<<u1[0]<<" v2 "<<v2[0]<< " u1.v2 "<< term2[0]<<std::endl;
-  std::transform(std::begin(u2),
-         std::end(u2),
-         std::begin(v1),
-         std::begin(term3), std::multiplies{}); // u2.v1
-  std::cout<<" u2 "<<u2[0]<<" v1 "<<v1[0]<< " u2.v1 "<< term3[0]<<std::endl;
-  std::transform(std::begin(term1),
-       std::end(term1),
-       std::begin(term2),
-       std::begin(term4), std::plus{}); // u1.v1 + u1.v2
-  std::cout<<" term1 + term2 = term4 "<< term4[0]<<std::endl;
-  std::transform(std::begin(term4),
-       std::end(term4),
-       std::begin(term3),
-       std::begin(term5), std::plus{}); // u1.v1 + u1.v2 + u2.v1
-  std::cout<<" term5= term4 + term3 "<< term5[0]<<std::endl;
- std::transform(std::begin(term5),
-       std::end(term5),
-       std::begin(alpha0),
-       std::begin(z0), std::plus{}); // u1.v1 + u1.v2 + u2.v1
- std::cout<< "term5 + alpha1= z2 " <<z0[0]<<std::endl;
- std::cout <<"my_id="<< my_id << " MULT z0 "<< z0[0]<<" " <<std::endl;
- beavy_provider_.send_ints_message(2, this->gate_id_, z0, 1);
- auto z2=share_future0_.get();
- std::cout<<" z2 received from p1 = "<<z2[0] <<std::endl;
- std::cout<< " \n---------------end of MULT of DIZK ------------\n" <<std::endl;
- std::vector<T> gamma_r_0(num_simd_);
- z0.resize(this->input_a_->get_num_simd());
- r02.resize(this->input_a_->get_num_simd());
- std::transform(std::begin(z0),
-       std::end(z0),
-       std::begin(r02),
-       std::begin(gamma_r_0), std::minus{});
- std::cout <<"my_id="<< my_id << " MULT gamma_r_0 "<< gamma_r_0[0]<<" " <<std::endl;
- std::vector<T> gamma_r_2(num_simd_);
- z2.resize(this->input_a_->get_num_simd());
- r01.resize(this->input_a_->get_num_simd());
- std::transform(std::begin(z2),
-       std::end(z2),
-       std::begin(r01),
-       std::begin(gamma_r_2), std::minus{});
-std::cout <<"my_id="<< my_id << " MULT gamma_r_2 "<< gamma_r_2[0]<<" " <<std::endl;
- this->output_->get_secret_share_2()=gamma_r_0;
- this->output_->get_public_share_2()=gamma_r_2;
- this->output_->set_setup_ready();
-
- std::cout<<"\n----------------CONSISTENCY CHECK--------------------\n"<<std::endl;
- std::cout<< " MULT: u1 "<<u1[0]<<std::endl;
- std::cout<< " MULT: u2 "<<u2[0]<<std::endl;
- std::cout<< " MULT: v1 "<<v1[0]<<std::endl;
- std::cout<< " MULT: v2 "<<v2[0]<<std::endl;
- std::cout<<"\n----------------CONSISTENCY CHECK--------------------\n"<<std::endl;
+        std::cout<<"\n TEST inside ArithmeticBEAVYMULGate<T>::evaluate_setup"<<std::endl;
+        num_simd_ = this->input_a_->get_num_simd();
+        this->input_a_->wait_setup();
+        this->input_b_->wait_setup();
+        auto my_id = beavy_provider_.get_my_id();
+        auto& mbp = beavy_provider_.get_motion_base_provider();
+        // num_simd_ = this->input_a_->get_num_simd();
+        // beavy_provider_.initiali();
+        std::vector<T> mns(num_simd_);
+        mns[0]=-1;
+        for(int i=0; i<mns.size(); i++){
+          std::cout<<"minus one  ="<<mns[i]<<std::endl;
+        }
 
 
- beavy_provider_.set_cckt(this-> gate_id_, u1, u2, v1, v2, z0, alpha0);
+        if(my_id==0){ //yoyo
 
- std::size_t last_mult_gate_id=99;
- beavy_provider_.DIZK_verify(last_mult_gate_id);
+
+          //get lambda_x1
+          std::cout<< " p0 gate_id =" << this-> gate_id_<< " num_simd_ " << num_simd_ << std::endl;
+          for(int i = 0; i < this->input_a_->get_secret_share().size(); i++) {
+                      std::cout <<"my_id="<< my_id << " MULT Lambda_x0 = u1 "<< this->input_a_->get_secret_share()[i]<<" " <<std::endl;
+          }
+          lambda_x0=this->input_a_->get_secret_share(); //get lambdab
+
+          //this->output_->get_secret_share() has lambda_y0
+          std::cout<< " p0 gate_id =" << this-> gate_id_<< " num_simd_ " << num_simd_ << std::endl;
+          for(int i = 0; i < this->input_b_->get_secret_share().size(); i++) {
+                      std::cout <<"my_id="<< my_id << " MULT Lambda_y0 = v1 "<< this->input_b_->get_secret_share()[i]<<" " <<std::endl;
+          }
+          lambda_y0=this->input_b_->get_secret_share(); // get lambda_a
+
+          for(int i = 0; i < this->input_a_->get_public_share_2().size(); i++) {
+                      std::cout <<"my_id="<< my_id << "MULT lambda_x2 = u2 "<< this->input_a_->get_public_share_2()[i]<<" " <<std::endl;
+          }
+         lambda_x2 = this->input_a_->get_public_share_2(); //get lambda_x2
+
+          //get gamma_y in paper = lambda_y2 in code
+          for(int i = 0; i < this->input_b_->get_secret_share_2().size(); i++) {
+                      std::cout <<"my_id="<< my_id << " MULT lambda_y2 = v2 "<< this->input_b_->get_secret_share_2()[i]<<" " <<std::endl;
+          }
+          lambda_y2=this->input_b_->get_secret_share_2();
+
+            std::cout<< " retrieved (2,3) SS of lambda_a lambda_b --------" <<std::endl;
+          //generate r0
+          auto& rng3 = mbp.get_my_randomness_generator(2);
+          auto tmp=rng3.GetUnsigned<T>(this->gate_id_, 3);
+          // std::cout<< " TEST------------MULT setup: data type of 3 size shared randomness "<<typeid(tmp).name()<<std::endl;
+          // std::cout<< " TEST------------MULT setup:: size of 3 size shared randomness "<<tmp.size()<<std::endl;
+
+
+          //this->output_->get_secret_share_0()=std::move(tmp[0]);//lambda_r0
+          /*
+          this->output_->get_secret_share_1()= tmp[1]; //lambda_p0
+          auto row0=tmp[2];*/
+
+          std::cout<< "  p0 gate_id =" << this-> gate_id_<< " num_simd_ " << num_simd_ << std::endl;
+          for(int i = 0; i < this->output_->get_secret_share_0().size(); i++) {
+                      std::cout <<"my_id="<< my_id << " MULT lambda_r0  "<< this->output_->get_secret_share_0()[i]<<" " <<std::endl;
+                      std::cout<<"\n " <<std::endl;
+          }
+          auto r0=this->output_->get_secret_share_0();
+          //this->output_->get_secret_share()=this->output_->get_secret_share_0() + this->output_->get_secret_share_1();
+          std::transform(std::begin(this->output_->get_secret_share_0()),
+                 std::end(this->output_->get_secret_share_0()),
+                 std::begin(this->output_->get_secret_share_1()),
+                 std::begin(this->output_->get_secret_share()), std::plus{});
+
+
+          auto& rng7 = mbp.get_my_randomness_generator(1);
+          this->output_->get_public_share_1()=rng7.GetUnsigned<T>(this->gate_id_, num_simd_); //lambda_z1
+          for(int i = 0; i < this->output_->get_public_share_1().size(); i++) {
+                      std::cout <<"my_id="<< my_id << " MULT lambda_r2 "<< this->output_->get_public_share_1()[i]<<" " <<std::endl;
+          }
+          auto r2=this->output_->get_secret_share();
 
 
 
-} //end of party 0
-    if(my_id==1){
-      lambda_y1.push_back(this->input_b_->get_secret_share()[0]);
-      std::cout <<"my_id="<< my_id << " MULT Lambda_y1 "<< this->input_b_->get_secret_share()[0]<<" lambda_y1 "<<lambda_y1[0] <<std::endl;
-      lambda_x1.push_back(this->input_a_->get_secret_share()[0]);
-      std::cout <<"my_id="<< my_id << " MULT Lambda_x1 "<< this->input_a_->get_secret_share()[0]<<" lambda_x1 "<<lambda_x1[0] <<std::endl;
-      lambda_y2.push_back(this->input_b_->get_public_share_2()[0]);
-      std::cout <<"my_id="<< my_id << "MULT lambda_y2  "<< this->input_b_->get_public_share_2()[0]<<" lambda_y2 "<<lambda_y2[0] <<std::endl;
+          //
+          // std::vector<T> r(num_simd_);
+          // std::transform(std::begin(r0),
+          //        std::end(r0),
+          //        std::begin(r2),
+          //        std::begin(r), std::plus{});
+          std::cout<<"\n ----------------start of MULT of DIZK------------------------ \n"<<std::endl;
+          //invoke F_MultPre on lambda_a lambda_b
+          //[[u]]= (lambda_x2, lambda_x0)
+          //[[v]]=(lambda_y2, lambda_y0)
+          std::vector<T> u1(num_simd_);
+          std::vector<T> u2(num_simd_);
+          std::vector<T> v1(num_simd_);
+          std::vector<T> v2(num_simd_);
 
-      lambda_x2.push_back(this->input_a_->get_secret_share_2()[0]);
-      std::cout <<"my_id="<< my_id << " MULT lambda_x2 "<< this->input_a_->get_secret_share_2()[0]<<" lambda_x2 "<<lambda_x2[0] <<std::endl;
+          v1=lambda_x0;
+          v2=lambda_x2;
+          u1= lambda_y0;
+          u2= lambda_y2;
+          //generate alpha_0= row_i - row_(i-1);
+          //p0 holds row1, row3.
+          //p1 holds row2,row3.
+          //p3 holds row1,row3.
+          auto& row0ring=mbp.get_my_randomness_generator(2); // to be picked up by p2
+          auto row0=row0ring.GetUnsigned<T>(this->gate_id_, num_simd_);
+          auto& row3ring=mbp.get_my_randomness_generator(my_id); // to be picked by p1
+          auto row3=row3ring.GetUnsigned<T>(this->gate_id_, num_simd_); //this is okay
 
-      std::cout<< " -------- retrieved (2,3) SS of lambda_a lambda_b --------" <<std::endl;
-      //-----------------common between p1 and  p2------------------------------
-       auto& rng8 = mbp.get_my_randomness_generator(2);
-       auto tmp1=rng8.GetUnsigned<T>(this->gate_id_, 3);
-       auto& rng13 = mbp.get_my_randomness_generator(my_id);
-       auto tmp13=rng13.GetUnsigned<T>(this->gate_id_, 1); //lambda_p1
-       std::vector<T> r12;
-       std::vector<T> p12;
-       std::vector<T> row12;
-       r12.push_back(tmp1[0]);
-       p12.push_back(tmp13[0]);
-       row12.push_back(tmp1[2]);
-       std::cout<<" yoyo r1="<<r12[0]<<std::endl;
-       std::cout<<" yoyo p1="<<p12[0]<<std::endl;
-       std::cout<<" yoyo row1="<<row12[0]<<std::endl;
-       this->output_->get_secret_share_0().push_back(r12[0]); //r1
-       this->output_->get_public_share_0().push_back(p12[0]); //lambda_p1
-       std::vector<T> neg;
-       MAX64v.resize(this->input_a_->get_num_simd());
-       r12.resize(this->input_a_->get_num_simd());
-       neg.resize(this->input_a_->get_num_simd()); //lambda_r1
-       this->output_->get_public_share_0().resize(this->input_a_->get_num_simd());//lambda_p0
-       this->output_->get_secret_share_3().resize(this->input_a_->get_num_simd()); //z1
-       std::transform(std::begin(MAX64v),
-               std::end(MAX64v),
-               std::begin(r12),
-               std::begin(neg), std::minus{});
-       neg[0]=neg[0]+1; //neg=Lambda_r0
-       std::transform(std::begin(neg),
-               std::end(neg),
-               std::begin(this->output_->get_public_share_0()),
-               std::begin(this->output_->get_secret_share_3()), std::plus{}); //lambda_r0 + lambda_p = lambda_z0
-     std::cout <<"my_id="<< my_id << " MULT lambda_z1  "<< this->output_->get_secret_share_3()[0]<<" " <<std::endl;
-     //===========end of common part between p1 and p2============
-     //===========start of common part between p1 and p0==========
-     auto& rng5 = mbp.get_their_randomness_generator(0);
-     auto tmp2=rng5.GetUnsigned<T>(this->gate_id_, 3); //lambda_z2
-     auto& rng6 = mbp.get_our_randomness_generator(0);
-     auto tmp6=rng6.GetUnsigned<T>(this->gate_id_, 1); //lambda_p0
-     std::vector<T> p00;
-     std::vector<T> r10;
-     std::vector<T> p10;
-     std::vector<T> row10;
-     r10.push_back(tmp2[0]);
-     p10.push_back(tmp2[1]);
-     p00.push_back(tmp6[0]);
-     row10.push_back(tmp2[2]);
-     std::cout<<" yoyo r2="<<r10[0]<<std::endl;
-     std::cout<<" yoyo p2="<<p10[0]<<std::endl;
-     std::cout<<" yoyo row2="<<row10[0]<<std::endl;
-     std::cout<<" yoyo p0="<<p00[0]<<std::endl;
-     this->output_->get_secret_share_1().push_back(r10[0]); //lambda_r2
-     this->output_->get_public_share_1().push_back(p10[0]); //lambda_p2
-     this->output_->get_secret_share_4().push_back(p00[0]); //lambda_p0
-     this->output_->get_public_share_1().resize(this->input_a_->get_num_simd());
-     this->output_->get_public_share_3().resize(this->input_a_->get_num_simd());
-     std::vector<T> neg1;
-     MAX64v.resize(this->input_a_->get_num_simd());
-     r10.resize(this->input_a_->get_num_simd());
-     neg1.resize(this->input_a_->get_num_simd()); //lambda_r2
-     this->output_->get_public_share_1().resize(this->input_a_->get_num_simd());//lambda_p2
-     this->output_->get_secret_share_3().resize(this->input_a_->get_num_simd()); //z1
-     std::transform(std::begin(MAX64v),
-             std::end(MAX64v),
-             std::begin(r10),
-             std::begin(neg1), std::minus{});
-     neg1[0]=neg1[0]+1; //neg=Lambda_r2
-     std::transform(std::begin(neg1),
-             std::end(neg1),
-             std::begin(this->output_->get_public_share_1()),
-             std::begin(this->output_->get_public_share_3()), std::plus{}); //lambda_r0 + lambda_p = lambda_z0
-   std::cout <<"my_id="<< my_id << " MULT lambda_z2  "<< this->output_->get_public_share_3()[0]<<" " <<std::endl;
-  //===========end of common part between p1 and p0==================
-   std::cout<<"\n ----------------start of MULT of DIZK------------------------ \n"<<std::endl;
-   std::vector<T> u1;
-   std::vector<T> u2;
-   std::vector<T> v1;
-   std::vector<T> v2;
+          std::vector<T> alpha0(num_simd_);
+          std::transform(std::begin(row0),
+                 std::end(row0),
+                 std::begin(row3),
+                 std::begin(alpha0), std::minus{}); // alpha0= row0-row3;
 
-   v1.push_back(lambda_x2[0]);
-   v2.push_back(lambda_x1[0]);
-   u1.push_back(lambda_y2[0]);
-   u2.push_back(lambda_y1[0]);
 
-   std::vector<T> alpha1(num_simd_);
-   std::transform(std::begin(row10),
-          std::end(row10),
-          std::begin(row12),
-          std::begin(alpha1), std::minus{}); // alpha0= row0-row3;
-  std::cout <<"my_id="<< my_id << " MULT alpha1 "<< alpha1[0]<<" " <<std::endl;
-  std::vector<T> term1(1);
-  std::vector<T> term2(1);
-  std::vector<T> term3(1);
-  std::vector<T> term4(1);
-  std::vector<T> term5(1);
-  std::vector<T> z2(1); //change here
-  std::transform(std::begin(u1),
-         std::end(u1),
-         std::begin(v1),
-         std::begin(term1), std::multiplies{}); // u1.v1
-  std::cout<<" u1 "<<u1[0]<<" v1 "<<v1[0]<< " u1.v1 "<< term1[0]<<std::endl;
-  std::transform(std::begin(u1),
-         std::end(u1),
-         std::begin(v2),
-         std::begin(term2), std::multiplies{}); // u1.v2
-  std::cout<<" u1 "<<u1[0]<<" v2 "<<v2[0]<< " u1.v2 "<< term2[0]<<std::endl;
-   std::transform(std::begin(u2),
-           std::end(u2),
-           std::begin(v1),
-           std::begin(term3), std::multiplies{});
-  std::cout<<" u2 "<<u2[0]<<" v1 "<<v1[0]<< " u2.v1 "<< term3[0]<<std::endl;
-   std::transform(std::begin(term1),
-         std::end(term1),
-         std::begin(term2),
-         std::begin(term4), std::plus{}); // u1.v1 + u1.v2
-  std::cout<<" term1 + term2 = term4 "<< term4[0]<<std::endl;
-   std::transform(std::begin(term4),
-         std::end(term4),
-         std::begin(term3),
-         std::begin(term5), std::plus{}); // u1.v1 + u1.v2 + u2.v1
-  std::cout<<" term5= term4 + term3 "<< term5[0]<<std::endl;
-  std::transform(std::begin(term5),
-       std::end(term5),
-       std::begin(alpha1),
-       std::begin(z2), std::plus{}); // u1.v1 + u1.v2 + u2.v1
-  std::cout<< "term5 + alpha1= z2 " <<z2[0]<<std::endl;
-  std::cout <<"my_id="<< my_id << " MULT z2 generated "<< z2[0]<<" " <<std::endl;
-  beavy_provider_.send_ints_message(0, this->gate_id_, z2, 1);
-  auto z1=share_future1_.get();
-  std::cout<< "++++++++++++++++++++ z1 received from p2 +++++++++++++++" <<z1[0]<<std::endl;
-  std::cout<< " \n---------------end of MULT of DIZK ------------\n" <<std::endl;
-  std::vector<T> gamma_r_2(num_simd_); //common between p0 and p1
-  std::transform(std::begin(z2),
-        std::end(z2),
-        std::begin(r10),
-        std::begin(gamma_r_2), std::minus{});
-  std::cout <<"my_id="<< my_id << " MULT gamma_r_2 "<< gamma_r_2[0]<<" " <<std::endl;
-  std::vector<T> gamma_r_1(num_simd_);
-  std::transform(std::begin(z1),
-        std::end(z1),
-        std::begin(r12), //z1 is received from p2 //r12 is (p0,p2)
-        std::begin(gamma_r_1), std::minus{});
-    std::cout <<"my_id="<< my_id << " MULT gamma_r_1 "<< gamma_r_1[0]<<" " <<std::endl;
-    this->output_->get_secret_share_2()=gamma_r_2; //nijer ta
-    this->output_->get_public_share_2()=gamma_r_1; //onner ta
-    this->output_->set_setup_ready();
+         for(int i = 0; i < alpha0.size(); i++) {
+                     std::cout <<"my_id="<< my_id << " MULT alpha0 "<< alpha0[i]<<" " <<std::endl;
+         }
 
-    std::vector<T> zero_v(1);
-    zero_v.push_back(0);
+         // for(int i = 0; i < v2.size(); i++) {
+         //             std::cout <<"my_id="<< my_id << " MULT v2 before term1 "<< v2[i]<<" " <<std::endl;
+         // }
 
-    beavy_provider_.set_cckt(this-> gate_id_, u1, zero_v, v1, zero_v, z2, row10);
-    std::size_t last_mult_gate_id=99;
-    beavy_provider_.DIZK_verify(last_mult_gate_id);
+          std::vector<T> term1(num_simd_);
+          std::vector<T> term2(num_simd_);
+          std::vector<T> term3(num_simd_);
+          std::vector<T> term4(num_simd_);
+          std::vector<T> term5(num_simd_);
+          std::vector<T> z0(num_simd_);
+
+
+
+          std::transform(std::begin(u1),
+                 std::end(u1),
+                 std::begin(v1),
+                 std::begin(term1), std::multiplies{}); // u1.v1
+
+         for(int i = 0; i < term1.size(); i++) {
+                     std::cout <<"my_id="<< my_id << " MULT term1 = u1.v1 "<< term1[i]<<" " <<std::endl;
+         }
+
+        u1.resize(this->input_a_->get_num_simd());
+        v2.resize(this->input_a_->get_num_simd());
+        lambda_x2.resize(this->input_a_->get_num_simd());
+        term2.resize(this->input_a_->get_num_simd());
+
+
+
+          std::transform(std::begin(u1),
+                std::end(u1),
+                std::begin(v2),
+                std::begin(term2), std::multiplies{}); // u1.v2
+        for(int i = 0; i < term2.size(); i++) {
+                    std::cout <<"my_id="<< my_id << " MULT term2 = u1.v2 "<< term2[i]<<" " <<std::endl;
+        }
+        std::transform(std::begin(u2),
+                std::end(u2),
+                std::begin(v1),
+                std::begin(term3), std::multiplies{}); // u2.v1
+        for(int i = 0; i < term3.size(); i++) {
+                    std::cout <<"my_id="<< my_id << " MULT term3 = u2.v1 "<<term3[i]<<" " <<std::endl;
+        }
+          std::transform(std::begin(term1),
+                std::end(term1),
+                std::begin(term2),
+                std::begin(term4), std::plus{}); // u1.v1 + u1.v2
+        for(int i = 0; i < term4.size(); i++) {
+                    std::cout <<"my_id="<< my_id << " MULT term4 = u1.v1 + u1.v2 "<< term4[i]<<" " <<std::endl;
+        }
+          std::transform(std::begin(term4),
+                std::end(term4),
+                std::begin(term3),
+                std::begin(term5), std::plus{}); // u1.v1 + u1.v2 + u2.v1
+        for(int i = 0; i < term5.size(); i++) {
+                    std::cout <<"my_id="<< my_id << " MULT term5 = u1.v1 + u1.v2 + u2.v1 "<< term5[i]<<" " <<std::endl;
+        }
+          std::transform(std::begin(term5),
+                std::end(term5),
+                std::begin(alpha0),
+                std::begin(z0), std::plus{}); // u1.v1 + u1.v2 + u2.v1
+
+          // std::cout<<"size of z0= "<<z0.size()<<std::endl;
+
+          for(int i = 0; i < z0.size(); i++) {
+                      std::cout <<"my_id="<< my_id << " MULT z0 "<< z0[i]<<" " <<std::endl;
+          }
+
+
+          std::cout << "ALANNNNNNNNNN " << this->gate_id_ << std::endl;
+          beavy_provider_.send_ints_message(1, this->gate_id_, z0);
+
+
+          auto z2=share_future0_.get();
+          for(int i=0; i<z2.size(); i++){
+            std::cout<<" z2 received from p2 = "<<z2[i] <<std::endl;
+          }
+          //p0 stores (z0, z2) as the (2,3) SS of z
+          //std::cout<< " received (2,3) Additive SS of z, "<< " z0 "<<z0 <<" z2 "<<z2<<std::endl;
+          std::cout<< " ---------------end of MULT of DIZK ------------" <<std::endl;
+
+          // DIZK_verify
+
+
+          std::cout<<"in MULT, after cckt"<<std::endl;
+
+
+
+          std::vector<T> gamma_r_0(num_simd_);
+          z0.resize(this->input_a_->get_num_simd());
+          r0.resize(this->input_a_->get_num_simd());
+
+          std::transform(std::begin(z0),
+                std::end(z0),
+                std::begin(r0),
+                std::begin(gamma_r_0), std::minus{});
+
+          for(int i = 0; i < gamma_r_0.size(); i++) {
+                      std::cout <<"my_id="<< my_id << " MULT gamma_r_0 "<< gamma_r_0[i]<<" " <<std::endl;
+          }
+
+          std::vector<T> gamma_r_2(num_simd_);
+          z2.resize(this->input_a_->get_num_simd());
+          r2.resize(this->input_a_->get_num_simd());
+          std::transform(std::begin(z2),
+                std::end(z2),
+                std::begin(r2),
+                std::begin(gamma_r_2), std::minus{});
+
+
+          for(int i = 0; i < gamma_r_2.size(); i++) {
+                      std::cout <<"my_id="<< my_id << " MULT gamma_r_2 "<< gamma_r_2[i]<<" " <<std::endl;
+          }
+       this->output_->get_secret_share_2()=gamma_r_0;
+          this->output_->get_public_share_2()=gamma_r_2;
+
+
+          this->output_->set_setup_ready();
+          beavy_provider_.set_cckt(this->gate_id_, u1, v1, u2, v2, alpha0, z0);
+          //------------put the gamma-r component wise values in common wires
+        }
+         if(my_id==1) //yoyo
+         {
+
+             //p1 noow holds both z0, z1
+
+             std::cout<< " p0 gate_id =" << this-> gate_id_<< " num_simd_ " << num_simd_ << std::endl;
+             for(int i = 0; i < this->input_b_->get_secret_share().size(); i++) {
+                         std::cout <<"my_id="<< my_id << " MULT Lambda_y1 "<< this->input_b_->get_secret_share()[i]<<" " <<std::endl;
+             }
+             lambda_y1=this->input_b_->get_secret_share(); // get lambda_a
+             //get lambda_x1
+             std::cout<< " p0 gate_id =" << this-> gate_id_<< " num_simd_ " << num_simd_ << std::endl;
+             for(int i = 0; i < this->input_a_->get_secret_share().size(); i++) {
+                         std::cout <<"my_id="<< my_id << " MULT Lambda_x1 "<< this->input_a_->get_secret_share()[i]<<" " <<std::endl;
+             }
+             lambda_x1=this->input_a_->get_secret_share(); //get lambdab
+
+             for(int i = 0; i < this->input_b_->get_public_share_2().size(); i++) {
+                         std::cout <<"my_id="<< my_id << "MULT lambda_y2  "<< this->input_b_->get_public_share_2()[i]<<" " <<std::endl;
+             }
+             lambda_x2 = this->input_b_->get_public_share_2(); //get lambda_x2
+
+             //get gamma_y in paper = lambda_y2 in code
+             for(int i = 0; i < this->input_a_->get_secret_share_2().size(); i++) {
+                         std::cout <<"my_id="<< my_id << " MULT lambda_x2 "<< this->input_a_->get_secret_share_2()[i]<<" " <<std::endl;
+             }
+             lambda_y2=this->input_a_->get_secret_share_2();
+
+             std::cout<< " -------- retrieved (2,3) SS of lambda_a lambda_b --------" <<std::endl;
+             //generate r0
+             auto& rng8 = mbp.get_my_randomness_generator(2);
+             this->output_->get_secret_share()=rng8.GetUnsigned<T>(this->gate_id_, num_simd_); //lambda_z1
+             for(int i = 0; i < this->output_->get_secret_share().size(); i++) {
+                         std::cout <<"my_id="<< my_id << " MULT r1  "<< this->output_->get_secret_share()[i]<<" " <<std::endl;
+             }
+             auto r1= this->output_->get_secret_share();
+
+             auto& rng5 = mbp.get_their_randomness_generator(0);
+             this->output_->get_public_share_2()=rng5.GetUnsigned<T>(this->gate_id_, num_simd_); //lambda_z2
+            for(int i = 0; i < this->output_->get_public_share_2().size(); i++) {
+                         std::cout <<"my_id="<< my_id << " MULT r0 "<< this->output_->get_public_share_2()[i]<<" " <<std::endl;
+             }
+             auto r0=this->output_->get_public_share_2();
+
+
+
+             std::cout<<"\n ----------------start of MULT of DIZK------------------------ \n"<<std::endl;
+             //invoke F_MultPre on lambda_a lambda_b
+             //[[u]]= (lambda_x2, lambda_x0)
+             //[[v]]=(lambda_y2, lambda_y0)
+             std::vector<T> u1(num_simd_);
+             std::vector<T> u2(num_simd_);
+             std::vector<T> v1(num_simd_);
+             std::vector<T> v2(num_simd_);
+
+             v1=lambda_x1;
+             v2=lambda_x2;
+             u1= lambda_y1;
+             u2= lambda_y2;
+             //generate alpha_0= row_i - row_(i-1);
+             //p0 holds row1, row3.
+             //p1 holds row2,row3.
+             //p3 holds row1,row3.
+             auto& row1ring=mbp.get_my_randomness_generator(2); // to be picked up by p2
+             auto row1=row1ring.GetUnsigned<T>(this->gate_id_, num_simd_);
+             auto& row2ring=mbp.get_my_randomness_generator(my_id); // to be picked by p1
+             auto row2=row2ring.GetUnsigned<T>(this->gate_id_, num_simd_);
+
+             std::vector<T> alpha1(num_simd_);
+             std::transform(std::begin(row1),
+                    std::end(row1),
+                    std::begin(row2),
+                    std::begin(alpha1), std::minus{}); // alpha0= row0-row3;
+
+
+            for(int i = 0; i < alpha1.size(); i++) {
+                        std::cout <<"my_id="<< my_id << " MULT alpha1 "<< alpha1[i]<<" " <<std::endl;
+            }
+
+            // for(int i = 0; i < v2.size(); i++) {
+            //             std::cout <<"my_id="<< my_id << " MULT v2 before term1 "<< v2[i]<<" " <<std::endl;
+            // }
+
+             std::vector<T> term1(num_simd_);
+             std::vector<T> term2(num_simd_);
+             std::vector<T> term3(num_simd_);
+             std::vector<T> term4(num_simd_);
+             std::vector<T> term5(num_simd_);
+             std::vector<T> z1(num_simd_);
+
+
+             std::transform(std::begin(u1),
+                    std::end(u1),
+                    std::begin(v1),
+                    std::begin(term1), std::multiplies{}); // u1.v1
+
+            for(int i = 0; i < term1.size(); i++) {
+                        std::cout <<"my_id="<< my_id << " MULT term1 = u1.v1 "<< term1[i]<<" " <<std::endl;
+            }
+
+           u1.resize(this->input_a_->get_num_simd());
+           v2.resize(this->input_a_->get_num_simd());
+           lambda_x2.resize(this->input_a_->get_num_simd());
+           term2.resize(this->input_a_->get_num_simd());
+
+
+
+             std::transform(std::begin(u1),
+                   std::end(u1),
+                   std::begin(v2),
+                   std::begin(term2), std::multiplies{}); // u1.v2
+           for(int i = 0; i < term2.size(); i++) {
+                       std::cout <<"my_id="<< my_id << " MULT term2 = u1.v2 "<< term2[i]<<" " <<std::endl;
+           }
+           std::transform(std::begin(u2),
+                   std::end(u2),
+                   std::begin(v1),
+                   std::begin(term3), std::multiplies{}); // u2.v1
+           for(int i = 0; i < term3.size(); i++) {
+                       std::cout <<"my_id="<< my_id << " MULT term3 = u2.v1 "<<term3[i]<<" " <<std::endl;
+           }
+             std::transform(std::begin(term1),
+                   std::end(term1),
+                   std::begin(term2),
+                   std::begin(term4), std::plus{}); // u1.v1 + u1.v2
+           for(int i = 0; i < term4.size(); i++) {
+                       std::cout <<"my_id="<< my_id << " MULT term4 = u1.v1 + u1.v2 "<< term4[i]<<" " <<std::endl;
+           }
+             std::transform(std::begin(term4),
+                   std::end(term4),
+                   std::begin(term3),
+                   std::begin(term5), std::plus{}); // u1.v1 + u1.v2 + u2.v1
+           for(int i = 0; i < term5.size(); i++) {
+                       std::cout <<"my_id="<< my_id << " MULT term5 = u1.v1 + u1.v2 + u2.v1 "<< term5[i]<<" " <<std::endl;
+           }
+             std::transform(std::begin(term5),
+                   std::end(term5),
+                   std::begin(alpha1),
+                   std::begin(z1), std::plus{}); // u1.v1 + u1.v2 + u2.v1
+
+             // std::cout<<"size of z1= "<<z1.size()<<std::endl;
+
+             for(int i = 0; i < z1.size(); i++) {
+                         std::cout <<"my_id="<< my_id << " MULT z1 "<< z1[i]<<" " <<std::endl;
+             }
+
+
+
+             // DIZK_verify
+             std::cout << "ALANNNNNNNNNN " << this->gate_id_ << std::endl;
+             beavy_provider_.send_ints_message(2, this->gate_id_, z1);
+             auto z0=share_future1_.get();
+             for(int i=0; i<z0.size(); i++){
+                  std::cout<< "++++++++++++++++++++ z0 received from p0 +++++++++++++++" <<z0[i]<<std::endl;
+             }
+             //std::cout<< " received (2,3) Additive SS of z, "<< " z1 "<<z1 <<" z0 "<<z0<<std::endl;
+             std::cout<< " ---------------end of MULT of DIZK ------------" <<std::endl;
+
+            std::vector<T> gamma_r_0(num_simd_);
+            std::transform(std::begin(z0),
+                  std::end(z0),
+                  std::begin(r0),
+                  std::begin(gamma_r_0), std::minus{});
+
+          for(int i = 0; i < gamma_r_0.size(); i++) {
+                      std::cout <<"my_id="<< my_id << " MULT gamma_r_0 "<< gamma_r_0[i]<<" " <<std::endl;
+          }
+
+        //assign the two gamma values so as to get it carried to the online phase
+
+          std::vector<T> gamma_r_1(num_simd_);
+          std::transform(std::begin(z1),
+                std::end(z1),
+                std::begin(r1),
+                std::begin(gamma_r_1), std::minus{});
+
+        for(int i = 0; i < gamma_r_1.size(); i++) {
+                    std::cout <<"my_id="<< my_id << " MULT gamma_r_1 "<< gamma_r_1[i]<<" " <<std::endl;
+        }
+
+          this->output_->get_secret_share_2()=gamma_r_1;
+          this->output_->get_public_share_2()=gamma_r_0;
+
+
+
+             this->output_->set_setup_ready();
+
+
+            beavy_provider_.set_cckt(this->gate_id_, u1, v1, u2, v2, alpha1, z1);
+        }
+         if(my_id==2) //yoyo
+         {
+
+               for(int i = 0; i < this->input_a_->get_secret_share_0().size(); i++) {
+                           std::cout <<"my_id="<< my_id << " MULT Lambda_x0 "<< this->input_a_->get_secret_share_0()[i]<<" " <<std::endl;
+               }
+               lambda_x0=this->input_a_->get_secret_share_0(); // get lambda_a
+               //get lambda_x1
+
+               for(int i = 0; i < this->input_b_->get_public_share_1().size(); i++) {
+                           std::cout <<"my_id="<< my_id << " MULT Lambda_y0 "<< this->input_b_->get_secret_share_1()[i]<<" " <<std::endl;
+               }
+               lambda_y0=this->input_b_->get_secret_share_1(); //get lambdab
+
+               for(int i = 0; i < this->input_a_->get_public_share_0().size(); i++) {
+                           std::cout <<"my_id="<< my_id << "MULT lambda_x1 "<< this->input_a_->get_public_share_0()[i]<<" " <<std::endl;
+               }
+               lambda_x1 = this->input_a_->get_public_share_0(); //get lambda_x2
+
+               //get gamma_y in paper = lambda_y2 in code
+               for(int i = 0; i < this->input_b_->get_secret_share_1().size(); i++) {
+                           std::cout <<"my_id="<< my_id << " MULT lambda_y1 "<< this->input_b_->get_public_share_1()[i]<<" " <<std::endl;
+               }
+               auto lambda_y1=this->input_b_->get_public_share_1();
+
+
+               auto& rng3 = mbp.get_their_randomness_generator(0);
+               this->output_->get_secret_share_0()=rng3.GetUnsigned<T>(this->gate_id_, num_simd_);
+               for(int i = 0; i < this->output_->get_secret_share_0().size(); i++) {
+                           std::cout <<"my_id="<< my_id << " MULT r2  "<< this->output_->get_secret_share_0()[i]<<" " <<std::endl;
+               }
+               auto r2= this->output_->get_secret_share_0();
+
+
+
+               auto& rng10 = mbp.get_their_randomness_generator(1);
+               this->output_->get_secret_share_1()=rng10.GetUnsigned<T>(this->gate_id_, num_simd_);
+               for(int i = 0; i < this->output_->get_secret_share_1().size(); i++) {
+                           std::cout <<"my_id="<< my_id << " MULT r1 "<< this->output_->get_secret_share_1()[i]<<" " <<std::endl;
+               }
+               auto r1=this->output_->get_secret_share_1();
+         std::cout<< "inside mult setup, this->output_->set_setup_ready(); for \t party id \t" << my_id <<std::endl;
+         std::cout<< " -------- retrieved (2,3) SS of lambda_a lambda_b --------" <<std::endl;
+         std::cout<<"\n ----------------start of MULT of DIZK------------------------ \n"<<std::endl;
+
+
+         //[[u]]= (gamma_x, lambda_x0)
+
+         //this will be there in ajith
+
+         //----------------------------------------------------KEEP-------------------------------------------
+
+         //[[v]]=(gamma_y, lambda_y0)
+         std::vector<T> u1(num_simd_);
+         std::vector<T> u2(num_simd_);
+         std::vector<T> v1(num_simd_);
+         std::vector<T> v2(num_simd_);
+
+         v1=lambda_x0;
+         v2=lambda_x1;
+
+         // for(int i = 0; i < v2.size(); i++) {
+         //             std::cout <<"my_id="<< my_id << " MULT v2 just after initialise "<< v2[i]<<" " <<std::endl;
+         // }
+
+
+         u1= lambda_y0;
+         u2= lambda_y1;
+
+
+         //generate alpha_0= row_i - row_(i-1);
+         //p0 holds row1, row3.
+         //p1 holds row2,row3.
+         //p3 holds row1,row3.
+         auto& row0ring=mbp.get_my_randomness_generator(2); // to be picked up by p2
+         auto row0=row0ring.GetUnsigned<T>(this->gate_id_, num_simd_);
+         auto& row3ring=mbp.get_my_randomness_generator(my_id); // to be picked by p1
+         auto row3=row3ring.GetUnsigned<T>(this->gate_id_, num_simd_);
+
+         std::vector<T> alpha2(num_simd_);
+         std::transform(std::begin(row0),
+                std::end(row0),
+                std::begin(row3),
+                std::begin(alpha2), std::minus{}); // alpha0= row0-row3;
+
+
+        for(int i = 0; i < alpha2.size(); i++) {
+                    std::cout <<"my_id="<< my_id << " MULT alpha2 "<< alpha2[i]<<" " <<std::endl;
+        }
+
+        // for(int i = 0; i < v2.size(); i++) {
+        //             std::cout <<"my_id="<< my_id << " MULT v2 before term1 "<< v2[i]<<" " <<std::endl;
+        // }
+
+         std::vector<T> term1(num_simd_);
+         std::vector<T> term2(num_simd_);
+         std::vector<T> term3(num_simd_);
+         std::vector<T> term4(num_simd_);
+         std::vector<T> term5(num_simd_);
+         std::vector<T> z2(num_simd_);
+
+
+
+         std::transform(std::begin(u1),
+                std::end(u1),
+                std::begin(v1),
+                std::begin(term1), std::multiplies{}); // u1.v1
+
+        for(int i = 0; i < term1.size(); i++) {
+                    std::cout <<"my_id="<< my_id << " MULT term1 = u1.v1 "<< term1[i]<<" " <<std::endl;
+        }
+
+       u1.resize(this->input_a_->get_num_simd());
+       v2.resize(this->input_a_->get_num_simd());
+       lambda_x0.resize(this->input_a_->get_num_simd());
+       term2.resize(this->input_a_->get_num_simd());
+
+
+
+         std::transform(std::begin(u1),
+               std::end(u1),
+               std::begin(v2),
+               std::begin(term2), std::multiplies{}); // u1.v2
+       for(int i = 0; i < term2.size(); i++) {
+                   std::cout <<"my_id="<< my_id << " MULT term2 = u1.v2 "<< term2[i]<<" " <<std::endl;
+       }
+       std::transform(std::begin(u2),
+               std::end(u2),
+               std::begin(v1),
+               std::begin(term3), std::multiplies{}); // u2.v1
+       for(int i = 0; i < term3.size(); i++) {
+                   std::cout <<"my_id="<< my_id << " MULT term3 = u2.v1 "<<term3[i]<<" " <<std::endl;
+       }
+         std::transform(std::begin(term1),
+               std::end(term1),
+               std::begin(term2),
+               std::begin(term4), std::plus{}); // u1.v1 + u1.v2
+       for(int i = 0; i < term4.size(); i++) {
+                   std::cout <<"my_id="<< my_id << " MULT term4 = u1.v1 + u1.v2 "<< term4[i]<<" " <<std::endl;
+       }
+         std::transform(std::begin(term4),
+               std::end(term4),
+               std::begin(term3),
+               std::begin(term5), std::plus{}); // u1.v1 + u1.v2 + u2.v1
+       for(int i = 0; i < term5.size(); i++) {
+                   std::cout <<"my_id="<< my_id << " MULT term5 = u1.v1 + u1.v2 + u2.v1 "<< term5[i]<<" " <<std::endl;
+       }
+         std::transform(std::begin(term5),
+               std::end(term5),
+               std::begin(alpha2),
+               std::begin(z2), std::plus{}); // u1.v1 + u1.v2 + u2.v1
+
+         // std::cout<<"size of z2= "<<z2.size()<<std::endl;
+
+         for(int i = 0; i < z2.size(); i++) {
+                     std::cout <<"my_id="<< my_id << " MULT z2 "<< z2[i]<<" " <<std::endl;
+         }
+
+
+         std::cout << "ALANNNNNNNNNN " << this->gate_id_ << std::endl;
+         beavy_provider_.send_ints_message(0, this->gate_id_-1, z2 );
+
+         std::cout << "Send ints done - get next" << std::endl;
+
+         auto z1=share_future2_.get();
+         for(int i=0; i< z1.size(); i++){
+           std::cout<<" z1 received from p1 " << z1[i] <<std::endl;
+         }
+
+         //std::cout<< " received (2,3) Additive SS of z, "<< " z2 "<<z2 <<" z1 "<<z1<<std::endl;
+         std::cout<< " ---------------end of MULT of DIZK ------------" <<std::endl;
+
+
+         std::vector<T> gamma_r_2(num_simd_);
+         std::transform(std::begin(z2),
+               std::end(z2),
+               std::begin(r2),
+               std::begin(gamma_r_2), std::minus{});
+
+         for(int i = 0; i < gamma_r_2.size(); i++) {
+                     std::cout <<"my_id="<< my_id << " MULT gamma_r_2 "<< gamma_r_2[i]<<" " <<std::endl;
+         }
+
+         std::vector<T> gamma_r_1(num_simd_);
+         std::transform(std::begin(z1),
+               std::end(z1),
+               std::begin(r1),
+               std::begin(gamma_r_1), std::minus{});
+
+         for(int i = 0; i < gamma_r_1.size(); i++) {
+                     std::cout <<"my_id="<< my_id << " MULT gamma_r_1 "<< gamma_r_1[i]<<" " <<std::endl;
+         }
+
+
+         this->output_->get_secret_share_2()=gamma_r_2;
+         this->output_->get_public_share_2()=gamma_r_1;
+         this->output_->set_setup_ready();
+
+         beavy_provider_.set_cckt(this->gate_id_, u1, v1, u2, v2, alpha2, z2);
+
+         //get the setup phase share into the common wire
+
+    }//end of party 2
     // this->output_->set_setup_ready();
 
 
-    }
-    if(my_id==2){
-      lambda_x0.push_back(this->input_a_->get_secret_share_0()[0]);
-      std::cout <<"my_id="<< my_id << " MULT Lambda_x0 "<< this->input_a_->get_secret_share_0()[0]<<" lambda_x0 "<<lambda_x0[0] <<std::endl;
-      lambda_y0.push_back(this->input_b_->get_public_share_1()[0]);
-      std::cout <<"my_id="<< my_id << " MULT Lambda_y0 "<< this->input_b_->get_public_share_1()[0]<<" lambda_y0 "<<lambda_y0[0] <<std::endl;
-      lambda_x1.push_back(this->input_a_->get_public_share_0()[0]);
-      std::cout <<"my_id="<< my_id << "MULT lambda_x1 "<< this->input_a_->get_public_share_0()[0]<<" lambda_x1 "<<lambda_x1[0] <<std::endl;
-      lambda_y1.push_back(this->input_b_->get_secret_share_1()[0]);
-      std::cout <<"my_id="<< my_id << " MULT lambda_y1 "<< this->input_b_->get_secret_share_1()[0]<<" lambda_y1 "<< lambda_y1[0] <<std::endl;
-
-      //==================common between p2 and p0
-      auto& rng3 = mbp.get_their_randomness_generator(0);
-      auto tmp3=rng3.GetUnsigned<T>(this->gate_id_-1, 3);
-      auto& rng9 = mbp.get_our_randomness_generator(0);
-      auto tmp9=rng9.GetUnsigned<T>(this->gate_id_-1, 1);
-      std::vector<T> r20;
-      std::vector<T> p20;
-      std::vector<T> row20;
-      r20.push_back(tmp3[0]); //r0
-      p20.push_back(tmp9[0]); //p0
-      row20.push_back(tmp3[2]); //row0
-      std::cout<<" yoyo r0="<<r20[0]<<std::endl;
-      std::cout<<" yoyo p0="<<p20[0]<<std::endl;
-      std::cout<<" yoyo row0="<<row20[0]<<std::endl;
-      this->output_->get_secret_share_0().push_back(r20[0]); //r0
-      this->output_->get_public_share_0().push_back(p20[0]); //p0
-      std::vector<T> neg;
-      // MAX64v.resize(this->input_a_->get_num_simd());
-      // r20.resize(this->input_a_->get_num_simd());
-      neg.resize(this->input_a_->get_num_simd());
-      this->output_->get_public_share_0().resize(this->input_a_->get_num_simd());
-      this->output_->get_secret_share_3().resize(this->input_a_->get_num_simd());
-      std::transform(std::begin(MAX64v),
-              std::end(MAX64v),
-              std::begin(r20),
-              std::begin(neg), std::minus{});
-      neg[0]=neg[0]+1; //neg=Lambda_r0
-      std::transform(std::begin(neg),
-              std::end(neg),
-              std::begin(this->output_->get_public_share_0()),
-              std::begin(this->output_->get_secret_share_3()), std::plus{}); //lambda_r0 + lambda_p = lambda_z
-      std::cout <<"my_id="<< my_id << " MULT lambda_z0  "<< this->output_->get_secret_share_3()[0]<<" " <<std::endl;
-    //===================common between p2 and p1=============
-    auto& rng10 = mbp.get_their_randomness_generator(1);
-    auto tmp10=rng10.GetUnsigned<T>(this->gate_id_-1, 3);
-    auto& rng11 = mbp.get_our_randomness_generator(1);
-    auto tmp11=rng11.GetUnsigned<T>(this->gate_id_-1, 3);
-    std::vector<T> r21;
-    std::vector<T> p21;
-    std::vector<T> row21;
-    r21.push_back(tmp10[0]);
-    p21.push_back(tmp11[0]);
-    row21.push_back(tmp10[2]);
-    std::cout<<" yoyo r1="<<r21[0]<<std::endl;
-    std::cout<<" yoyo p1="<<p21[0]<<std::endl;
-    std::cout<<" yoyo row1="<<row21[0]<<std::endl;
-    this->output_->get_secret_share_1().push_back(r21[0]); //r1
-    this->output_->get_public_share_1().push_back(p21[0]); //lambda_p1
-    std::vector<T> neg1;
-    // MAX64v.resize(this->input_a_->get_num_simd());
-    // r21.resize(this->input_a_->get_num_simd());
-    neg1.resize(this->input_a_->get_num_simd());
-    this->output_->get_public_share_1().resize(this->input_a_->get_num_simd());
-    this->output_->get_public_share_3().resize(this->input_a_->get_num_simd());
-    std::transform(std::begin(MAX64v),
-            std::end(MAX64v),
-            std::begin(r21),
-            std::begin(neg1), std::minus{});
-    neg1[0]=neg1[0]+1; //neg=Lambda_r0
-    std::transform(std::begin(neg1),
-            std::end(neg1),
-            std::begin(this->output_->get_public_share_1()),
-            std::begin(this->output_->get_public_share_3()), std::plus{}); //lambda_r0 + lambda_p = lambda_z
-    std::cout <<"my_id="<< my_id << " MULT lambda_z1 "<< this->output_->get_public_share_3()[0]<<" " <<std::endl;
-    std::cout<< " -------- retrieved (2,3) SS of lambda_a lambda_b --------" <<std::endl;
-    std::cout<<"\n ----------------start of MULT of DIZK------------------------ \n"<<std::endl;
-    std::vector<T> u1;
-    std::vector<T> u2;
-    std::vector<T> v1;
-    std::vector<T> v2;
-    v1.push_back(lambda_x1[0]);
-    v2.push_back(lambda_x0[0]);
-    u1.push_back(lambda_y1[0]);
-    u2.push_back(lambda_y0[0]);
-    std::vector<T> alpha2(num_simd_);
-    std::transform(std::begin(row21),
-           std::end(row21),
-           std::begin(row20),
-           std::begin(alpha2), std::minus{}); // alpha0= row0-row3;
-    std::cout <<"my_id="<< my_id << " MULT alpha2 "<< alpha2[0]<<" " <<std::endl;
-    std::vector<T> term1(1);
-    std::vector<T> term2(1);
-    std::vector<T> term3(1);
-    std::vector<T> term4(1);
-    std::vector<T> term5(1);
-    std::vector<T> z1(1);
-    std::transform(std::begin(u1),
-           std::end(u1),
-           std::begin(v1),
-           std::begin(term1), std::multiplies{}); // u1.v1
-    std::cout <<"my_id="<< my_id << " MULT term1 = u1.v1 "<< term1[0]<<" " <<std::endl;
-    std::transform(std::begin(u1),
-          std::end(u1),
-          std::begin(v2),
-          std::begin(term2), std::multiplies{}); // u1.v2
-    std::cout<<" u1 "<<u1[0]<<" v2 "<<v2[0]<< " u1.v2 "<< term2[0]<<std::endl;
-    std::transform(std::begin(u2),
-            std::end(u2),
-            std::begin(v1),
-            std::begin(term3), std::multiplies{}); // u2.v1
-    std::cout<<" u2 "<<u2[0]<<" v1 "<<v1[0]<< " u2.v1 "<< term3[0]<<std::endl;
-    std::transform(std::begin(term1),
-          std::end(term1),
-          std::begin(term2),
-          std::begin(term4), std::plus{}); // u1.v1 + u1.v2
-    std::cout<<" term1 + term2 = term4 "<< term4[0]<<std::endl;
-    std::transform(std::begin(term4),
-          std::end(term4),
-          std::begin(term3),
-          std::begin(term5), std::plus{}); // u1.v1 + u1.v2 + u2.v1
-      std::cout<<" term5= term4 + term3 "<< term5[0]<<std::endl;
-    std::transform(std::begin(term5),
-          std::end(term5),
-          std::begin(alpha2),
-          std::begin(z1), std::plus{}); // u1.v1 + u1.v2 + u2.v1
-    std::cout<< "term5 + alpha1= z1 " <<z1[0]<<std::endl;
-    std::cout <<"my_id="<< my_id << " MULT z1 generated "<< z1[0]<<" " <<std::endl;
-    beavy_provider_.send_ints_message(1, this->gate_id_-1, z1 ,1);
-    auto z0=share_future2_.get();
-    std::cout<<" z0 received from p0 " << z1[0] <<std::endl;
-    std::vector<T> gamma_r_0(num_simd_);
-    std::transform(std::begin(z0),
-          std::end(z0),
-          std::begin(r20),
-          std::begin(gamma_r_0), std::minus{});
-    std::cout <<"my_id="<< my_id << " MULT gamma_r_0 "<< gamma_r_0[0]<<" " <<std::endl;
-    std::vector<T> gamma_r_1(num_simd_);
-    std::transform(std::begin(z1),
-          std::end(z1),
-          std::begin(r21),
-          std::begin(gamma_r_1), std::minus{});
-    std::cout <<"my_id="<< my_id << " MULT gamma_r_1 "<< gamma_r_1[0]<<" " <<std::endl;
-    this->output_->get_secret_share_2()=gamma_r_0; //nijer ta
-    this->output_->get_public_share_2()=gamma_r_1; //onner ta
-    this->output_->set_setup_ready();
-
-    std::vector<T> zero_v(1);
-    zero_v.push_back(0);
-    //
-    // beavy_provider_.set_cckt(this->gate_id_, zero_v, u2, zero_v, v2, zero_v, row20);
-    beavy_provider_.set_cckt(this->gate_id_, u1, u2, v1, v2, zero_v, row20);
-    std::size_t last_mult_gate_id=99;
-    beavy_provider_.DIZK_verify(last_mult_gate_id);
-    // this->output_->set_setup_ready();
-
-    }
-
-
-
+    std::cout << "LIVIN ON A THIN LINE ___________________" << std::endl;
 
   if constexpr (MOTION_VERBOSE_DEBUG) {
     auto logger = beavy_provider_.get_logger();
@@ -1984,290 +2046,186 @@ void ArithmeticBEAVYMULGate<T>::evaluate_online() {
 
     }
   }
+
   auto my_id = beavy_provider_.get_my_id();
+  if (my_id==2){
+    std::cout<<"\n no mult gate online phase for p2 \n "<<std::endl;
+    return;}
+
+
   auto num_simd = this->input_a_->get_num_simd();
   this->input_a_->wait_online();
   this->input_b_->wait_online();
-  auto& m_x = this->input_a_->get_public_share(); //Delta_a
-  auto& m_y = this->input_b_->get_public_share(); //Delta_b
-  if(my_id==0){
-      std::cout<<" MULT ONLINE gamma_ab0 - r0 " <<this->output_->get_secret_share_2()[0]<<std::endl;
-      std::cout<<" MULT online gamma_ab2 - r2 " <<this->output_->get_public_share_2()[0]<<std::endl;
-      std::cout<<" MULT online Lambda_x0" <<this->input_a_->get_secret_share()[0]<<std::endl;
-      std::cout<<" MULT online Lambda_y0" <<this->input_b_->get_secret_share()[0]<<std::endl;
-      //======y0=-lambda_x0.my -lambda_y0.mx + (gamma_ab0- r0)
+  const auto& m_x = this->input_a_->get_public_share(); //Delta_a
+  for(int i=0; i< m_x.size(); i++){
+      std::cout<< " MULT online, mx share " <<m_x[i]<<std::endl;
+  }
+  const auto& m_y = this->input_b_->get_public_share(); //Delta_b
+  for(int i=0; i < m_y.size(); i++){
+      std::cout<< " MULT online, my share " <<m_y[i]<<std::endl;
+  }
+  const auto& delta_a_share = this->input_a_->get_secret_share(); //lambda_x0
+  const auto& delta_b_share = this->input_b_->get_secret_share(); //lambda_x1
+
+  //let y=(z-r)-m_ab
+  if(my_id==0){ //yoyo
+    for(int i=0; i<this->output_->get_secret_share_2().size(); i++){
+        std::cout<<" MULT ONLINE gamma_ab0 - r0 " <<this->output_->get_secret_share_2()[i]<<std::endl;
+    }
+    for(int i=0; i<this->output_->get_public_share_2().size(); i++){
+        std::cout<<" MULT online gamma_ab2 - r2 " <<this->output_->get_public_share_2()[i]<<std::endl;
+    }
+
+
+    for(int i=0; i<this->input_a_->get_secret_share().size(); i++){
+        std::cout<<" MULT online Lambda_x0" <<this->input_a_->get_secret_share()[i]<<std::endl;}
+
+    for(int i=0; i<this->input_b_->get_secret_share().size(); i++){
+        std::cout<<" MULT online Lambda_y0" <<this->input_b_->get_secret_share()[i]<<std::endl;}
+
+
+      //y0=-lambda_x0.my -lambda_y0.mx + (gamma_ab0- r0)
       //y0=Delta_y_share0_
-      std::vector<T> Delta_y_share0_; //y0
-      // this->output_->get_secret_share_2().resize(this->input_b_->get_num_simd());
-      Delta_y_share0_.resize(this->input_b_->get_num_simd());
-      std::transform(std::begin(this->output_->get_secret_share_2()),  std::end(this->output_->get_secret_share_2()), std::begin(Delta_y_share0_),
-                     std::begin(Delta_y_share0_), std::plus{}); // + gammaxy_r0
+
+      std::vector<T> Delta_y_share0_;
+      this->output_->get_secret_share_2().resize(this->input_a_->get_num_simd());
+      Delta_y_share0_.resize(this->input_a_->get_num_simd());
+
+      std::transform(std::begin(Delta_y_share0_), std::end(Delta_y_share0_), std::begin(this->output_->get_secret_share_2()),
+                     std::begin(Delta_y_share0_), std::plus{});
+
+       // for(int i=0; i<Delta_y_share0_.size(); i++){
+       //     std::cout<<" MULT online, before term1, Delta_y_share0_" <<Delta_y_share0_[i]<<std::endl;}
+
       std::vector<T> term1;
-      // this->input_a_->get_secret_share().resize(this->input_a_->get_num_simd());
-      term1.resize(this->input_b_->get_num_simd());
-      Delta_y_share0_.resize(this->input_b_->get_num_simd());
+      this->input_a_->get_secret_share().resize(this->input_a_->get_num_simd());
+      term1.resize(this->input_a_->get_num_simd());
+      Delta_y_share0_.resize(this->input_a_->get_num_simd());
+
       std::transform(std::begin(this->input_a_->get_secret_share()), std::end(this->input_a_->get_secret_share()), std::begin(m_y),
                      std::begin(term1), std::multiplies{});
-       Delta_y_share0_.resize(this->input_b_->get_num_simd());
-       term1.resize(this->input_b_->get_num_simd());
-       std::transform(std::begin(Delta_y_share0_), std::end(Delta_y_share0_), std::begin(term1),
-        std::begin(Delta_y_share0_), std::minus{});
-        std::vector<T> term2;
-        // this->input_b_->get_secret_share().resize(this->input_a_->get_num_simd());
-        term2.resize(this->input_b_->get_num_simd());
-        std::transform(std::begin(this->input_b_->get_secret_share()), std::end(this->input_b_->get_secret_share()), std::begin(m_x),
-                       std::begin(term2), std::multiplies{});
-       term2.resize(this->input_b_->get_num_simd());
-       Delta_y_share0_.resize(this->input_b_->get_num_simd());
-       std::transform(std::begin(Delta_y_share0_), std::end(Delta_y_share0_), std::begin(term2),
-                      std::begin(Delta_y_share0_), std::minus{});
-      std::cout<< " MULT online::  Delta_y_share0_=y0= "<<Delta_y_share0_[0]<<std::endl;
-      //
-      //y2=-lambda_x2.my -lambda_y2.mx + (gamma_ab2- r2)
-      std::vector<T> Delta_y_share2_;
-      std::cout<<" MULT ONLINE lambda_x2 = "<<this->input_a_->get_public_share_2()[0]<<std::endl;
-      std::cout<<" MULT ONLINE lambda_y2 = "<<this->input_b_->get_secret_share_2()[0]<<std::endl;
-      // this->output_->get_public_share_2().resize(this->input_a_->get_num_simd());
-      Delta_y_share2_.resize(this->input_a_->get_num_simd());
-      std::transform(std::begin(Delta_y_share2_), std::end(Delta_y_share2_), std::begin(this->output_->get_public_share_2()),
-                     std::begin(Delta_y_share2_), std::plus{});
+
+       // for(int i=0; i<term1.size(); i++){
+       //     std::cout<<" MULT online, term1 = " <<term1[i]<<std::endl;}
+
+
+     Delta_y_share0_.resize(this->input_a_->get_num_simd());
+     term1.resize(this->input_a_->get_num_simd());
+     std::transform(std::begin(Delta_y_share0_), std::end(Delta_y_share0_), std::begin(term1),
+                    std::begin(Delta_y_share0_), std::minus{});
+
+      // for(int i=0; i<Delta_y_share0_.size(); i++){
+      //     std::cout<<" MULT online, Delta_y_share0_" <<Delta_y_share0_[i]<<std::endl;}
+
+
+
+      std::vector<T> term2;
+      this->input_b_->get_secret_share().resize(this->input_a_->get_num_simd());
+      term2.resize(this->input_a_->get_num_simd());
+
+      std::transform(std::begin(this->input_b_->get_secret_share()), std::end(this->input_b_->get_secret_share()), std::begin(m_x),
+                     std::begin(term2), std::multiplies{});
+
+     // for(int i=0; i<term2.size(); i++){
+     //     std::cout<<" MULT online, term2 " <<term2[i]<<std::endl;}
+
+     term2.resize(this->input_a_->get_num_simd());
+     Delta_y_share0_.resize(this->input_a_->get_num_simd());
+
+
+     std::transform(std::begin(Delta_y_share0_), std::end(Delta_y_share0_), std::begin(term2),
+                    std::begin(Delta_y_share0_), std::minus{});
+     for(int i=0; i<Delta_y_share0_.size(); i++){
+          std::cout<< " MULT online::  Delta_y_share0_=y0= "<<Delta_y_share0_[i]<<std::endl;
+     }
+//checked till here by printing================================
+     std::vector<T> Delta_y_share2_;
+     //y2=-lambda_x2.my -lambda_y2.mx + (gamma_ab2- r2)
+     //y2=Delta_y_share2_
+     for(int i=0; i< this->input_a_->get_public_share_2().size(); i++){
+       std::cout<<" MULT ONLINE lambda_x2 = "<<this->input_a_->get_public_share_2()[i]<<std::endl;
+     }
+     for(int i=0; i< this->input_b_->get_public_share_2().size(); i++){
+       std::cout<<" MULT ONLINE lambda_y2 = "<<this->input_b_->get_public_share_2()[i]<<std::endl;
+     }
+     this->output_->get_public_share_2().resize(this->input_a_->get_num_simd());
+
+     std::transform(std::begin(Delta_y_share2_), std::end(Delta_y_share2_), std::begin(this->output_->get_public_share_2()),
+                    std::begin(Delta_y_share2_), std::plus{});
+     //output_->get_public_share_2 has the gamma_r_2 share
+
      std::vector<T> term3;
-     // this->input_a_->get_secret_share().resize(this->input_a_->get_num_simd());
-     term3.resize(this->input_a_->get_num_simd());
-     std::transform(std::begin(this->input_a_->get_public_share_2()), std::end(this->input_a_->get_public_share_2()), std::begin(m_y),
+     this->input_a_->get_secret_share().resize(this->input_a_->get_num_simd());
+
+
+     std::transform(std::begin(this->input_a_->get_secret_share()), std::end(this->input_a_->get_secret_share()), std::begin(m_y),
                     std::begin(term3), std::multiplies{});
+
     Delta_y_share2_.resize(this->input_a_->get_num_simd());
     term3.resize(this->input_a_->get_num_simd());
+
     std::transform(std::begin(Delta_y_share2_), std::end(Delta_y_share2_), std::begin(term3),
                    std::begin(Delta_y_share2_), std::minus{});
+
      std::vector<T> term4;
-     // this->input_b_->get_secret_share_2().resize(this->input_b_->get_num_simd());
-     term4.resize(this->input_b_->get_num_simd());
-     std::transform(std::begin(this->input_b_->get_secret_share_2()), std::end(this->input_b_->get_secret_share_2()), std::begin(m_x),
+     this->input_b_->get_secret_share().resize(this->input_a_->get_num_simd());
+
+     std::transform(std::begin(this->input_b_->get_secret_share()), std::end(this->input_b_->get_secret_share()), std::begin(m_x),
                     std::begin(term4), std::multiplies{});
-    Delta_y_share2_.resize(this->input_b_->get_num_simd());
-    term4.resize(this->input_b_->get_num_simd());
     std::transform(std::begin(Delta_y_share2_), std::end(Delta_y_share2_), std::begin(term4),
-                  std::begin(Delta_y_share2_), std::minus{});
-    std::cout<< " MULT online::  Delta_y_share2_ = y2= "<<Delta_y_share2_[0]<<std::endl;
-    //p0 and p2 send y0 to p1
-    beavy_provider_.send_ints_message(1, this->gate_id_, Delta_y_share0_, 2 ); //2nd message
-    auto y1= share_future00_.get();
-    std::cout<<" JUST FOR CORRECTNESS(plug in JSend): y1 received from p1 "<<y1[0]<<std::endl;
-    //calculate p=y0+y1+y2 + mxy //Delta_y_share0_ + y1[0] + Delta_y_share2_
-    std::vector<T> p0;
-    p0.resize(this->input_b_->get_num_simd());
-    std::transform(std::begin(p0),  std::end(p0), std::begin(Delta_y_share0_),
-                   std::begin(p0), std::plus{});
-    p0.resize(this->input_b_->get_num_simd());
-    std::transform(std::begin(p0),  std::end(p0), std::begin(Delta_y_share2_),
-                   std::begin(p0), std::plus{});
-    std::transform(std::begin(p0),  std::end(p0), std::begin(y1),
-                 std::begin(p0), std::plus{});
-    std::vector<T> tmp; //mx.my
-   tmp.resize(this->input_b_->get_num_simd());
-   std::transform(std::begin(m_x),  std::end(m_x), std::begin(m_y),
-                 std::begin(tmp), std::multiplies{});
-   p0.resize(this->input_b_->get_num_simd());
-   std::transform(std::begin(p0),  std::end(p0), std::begin(tmp),
-                 std::begin(p0), std::plus{});
-  std::cout<<" p=y0+y1+y2 + mxy " <<p0[0]<<std::endl;
-  std::cout<< " \n---------TESTED both p0 and p1 get the same p-----------\n"<<std::endl;
-  std::cout<<" lambda_p0 = "<<this->output_->get_public_share_0()[0]<<std::endl;
-  std::cout<<" lambda_p1 = "<<this->output_->get_secret_share_4()[0]<<std::endl;
-  std::cout<<" lambda_p2 = "<<this->output_->get_public_share_1()[0]<<std::endl;
-
-
-  std::vector<T> mp0;
-  mp0.resize(this->input_b_->get_num_simd());
-  std::transform(std::begin(p0),  std::end(p0), std::begin(this->output_->get_public_share_0()),
-               std::begin(mp0), std::plus{});
-   std::transform(std::begin(mp0),  std::end(mp0), std::begin(this->output_->get_public_share_1()),
-                std::begin(mp0), std::plus{});
-  std::transform(std::begin(mp0),  std::end(mp0), std::begin(this->output_->get_secret_share_4()),
-               std::begin(mp0), std::plus{});
-  std::cout<<" mp0 = "<<mp0[0]<<std::endl;
-  // beavy_provider_.send_ints_message(1, this->gate_id_, mp0, 3);
-  // auto mp1=share_future01_.get();
-  // std::cout<< " mp1 got from p1 = "<<mp1[0]<<std::endl;
-  this->output_->get_public_share()=std::move(mp0); //mz=mp+mr //since mr=0, so mz=mp set as publicshare
-  // this->output->get_public_share_4()=std::move(mp1);
-  this->output_->set_online_ready();
-  }//end of party 0
-  if(my_id==1){
-      std::cout<<" MULT online lambda_y1 = " <<this->input_b_->get_secret_share()[0]<<std::endl;
-      std::cout<<" MULT online lambda_x1 = " <<this->input_a_->get_secret_share()[0]<<std::endl;
-      std::cout <<"MULT lambda_y2 = "<< this->input_b_->get_public_share_2()[0]<<std::endl;
-      std::cout <<" MULT lambda_x2 = "<< this->input_a_->get_secret_share_2()[0]<<std::endl;
-      std::cout<<" MULT online, gamma_r_1 = "<< this->output_->get_public_share_2()[0]<<std::endl;
-      std::cout<<" MULT online, gamma_r_2 = "<< this->output_->get_secret_share_2()[0]<<std::endl; //p1 has generated z2. so p1 would have z2 in the secret share label.
-      //y1=-lambda_x1.m_y - lambda_y1.m_x + (Gamma_xy - r)^1
-      std::vector<T> Delta_y_share1_;
-      // this->output_->get_public_share_2().resize(this->input_a_->get_num_simd()); //gamma_r_2
-      Delta_y_share1_.resize(this->input_a_->get_num_simd());
-      std::transform(std::begin(Delta_y_share1_),
-                              std::end(Delta_y_share1_),
-                              std::begin(this->output_->get_public_share_2()),
-                              std::begin(Delta_y_share1_), std::plus{});
-      std::vector<T> term5;
-      // this->input_a_->get_secret_share().resize(this->input_a_->get_num_simd());
-      term5.resize(this->input_a_->get_num_simd());
-      std::transform(std::begin(this->input_a_->get_secret_share()),  std::end(this->input_a_->get_secret_share()), std::begin(m_y),
-       std::begin(term5), std::multiplies{}); //lambda_x1.my
-       term5.resize(this->input_a_->get_num_simd());
-       Delta_y_share1_.resize(this->input_a_->get_num_simd());
-       std::transform(std::begin(Delta_y_share1_), std::end(Delta_y_share1_), std::begin(term5),
-      std::begin(Delta_y_share1_), std::minus{});
-      std::vector<T> term6; //lambda_y1.mx
-      // this->input_a_->get_secret_share().resize(this->input_a_->get_num_simd());
-      term6.resize(this->input_a_->get_num_simd());
-      std::transform(std::begin(this->input_b_->get_secret_share()),  std::end(this->input_b_->get_secret_share()), std::begin(m_x),
-                     std::begin(term6), std::multiplies{}); //lambda_y1.mx
-     term6.resize(this->input_a_->get_num_simd());
-     Delta_y_share1_.resize(this->input_a_->get_num_simd());
-     std::transform(std::begin(Delta_y_share1_), std::end(Delta_y_share1_), std::begin(term6),
-                    std::begin(Delta_y_share1_), std::minus{}); //-lambda_y1.mx
-    std::cout<<"  Delta_y_share1_ =y1  =" <<Delta_y_share1_[0]<<std::endl;
-  //y2=-lambda_x2.m_y -lambda_y2.m_x + (gamma_xy-r)^2
-  std::vector<T> Delta_y_share2_;
-  Delta_y_share2_.resize(this->input_a_->get_num_simd());
-  std::transform(std::begin(Delta_y_share2_),
-                          std::end(Delta_y_share2_),
-                          std::begin(this->output_->get_secret_share_2()),
-                          std::begin(Delta_y_share2_), std::plus{});
-  std::vector<T> term7;
-  term7.resize(this->input_a_->get_num_simd());
-  std::transform(std::begin(this->input_a_->get_secret_share_2()),  std::end(this->input_a_->get_secret_share_2()), std::begin(m_y),
-   std::begin(term7), std::multiplies{}); //lambda_x2.my
-   term7.resize(this->input_a_->get_num_simd());
-   Delta_y_share2_.resize(this->input_a_->get_num_simd());
-   std::transform(std::begin(Delta_y_share2_), std::end(Delta_y_share2_), std::begin(term7),
-      std::begin(Delta_y_share2_), std::minus{});
-  std::vector<T> term4;
-  term4.resize(this->input_b_->get_num_simd());
-  std::transform(std::begin(this->input_b_->get_public_share_2()), std::end(this->input_b_->get_public_share_2()), std::begin(m_x),
-                 std::begin(term4), std::multiplies{}); //lambda_y2.mx
- Delta_y_share2_.resize(this->input_b_->get_num_simd());
- term4.resize(this->input_b_->get_num_simd());
- std::transform(std::begin(Delta_y_share2_), std::end(Delta_y_share2_), std::begin(term4),
-               std::begin(Delta_y_share2_), std::minus{});
- std::cout<< " MULT online::  Delta_y_share2_ = y2= "<<Delta_y_share2_[0]<<std::endl;
- //p1 and p2 send y1 to p0
-  beavy_provider_.send_ints_message(0, this->gate_id_, Delta_y_share1_, 2 );
-  auto y0= share_future11_.get();
-  std::cout<<" JUST FOR CORRECTNESS(plug in JSend): y0 received from p0 "<<y0[0]<<std::endl;
-  //calculate p1=y0+y1+y2 + mxy //y0 + Delta_y_share1_ + Delta_y_share2_
-  std::vector<T> p1;
-  p1.resize(this->input_b_->get_num_simd());
-  std::transform(std::begin(p1),  std::end(p1), std::begin(Delta_y_share2_),
-                 std::begin(p1), std::plus{});
-  p1.resize(this->input_b_->get_num_simd());
-  std::transform(std::begin(p1),  std::end(p1), std::begin(Delta_y_share1_),
-                 std::begin(p1), std::plus{});
-  std::transform(std::begin(p1),  std::end(p1), std::begin(y0),
-               std::begin(p1), std::plus{});
-  std::vector<T> tmp; //mx.my
-  tmp.resize(this->input_b_->get_num_simd());
-  std::transform(std::begin(m_x),  std::end(m_x), std::begin(m_y),
-               std::begin(tmp), std::multiplies{});
-  p1.resize(this->input_b_->get_num_simd());
-  std::transform(std::begin(p1),  std::end(p1), std::begin(tmp),
-               std::begin(p1), std::plus{});
-  std::cout<<" p=y0+y1+y2 + mxy " <<p1[0]<<std::endl;
-  std::cout<< " \n---------TESTED both p0 and p1 get the same p-----------\n"<<std::endl;
-  //mp= p+ lambda_p
-  std::vector<T> mp1;
-  mp1.resize(this->input_b_->get_num_simd());
-  std::cout<<" lambda_p0 = "<<this->output_->get_secret_share_4()[0]<<std::endl;
-  std::cout<<" lambda_p1 = "<<this->output_->get_public_share_0()[0]<<std::endl;
-  std::cout<<" lambda_p2 = "<<this->output_->get_public_share_1()[0]<<std::endl;
-
-
-  std::transform(std::begin(p1),  std::end(p1), std::begin(this->output_->get_public_share_0()),
-               std::begin(mp1), std::plus{});
-   std::transform(std::begin(mp1),  std::end(mp1), std::begin(this->output_->get_public_share_1()),
-                std::begin(mp1), std::plus{});
-  std::transform(std::begin(mp1),  std::end(mp1), std::begin(this->output_->get_secret_share_4()),
-               std::begin(mp1), std::plus{});
-  std::cout<<" mp1 = "<<mp1[0]<<std::endl;
-  //beavy_provider_.broadcast_ints_message(this->gate_id_, mp1); //this is just for verfication to be sent to p2
-  // beavy_provider_.send_ints_message(0, this->gate_id_, mp1, 3);
-  // auto mp0=share_future10_.get();
-  // std::cout<< " mp1 got from p1 = "<<mp0[0]<<std::endl;
-  this->output_->get_public_share()=std::move(mp1); //mz=mp+mr //since mr=0, so mz=mp set as publicshare //nijer ta public_share label e
-  // this->output->get_public_share_4()=std::move(mp1);
-
-
+                   std::begin(Delta_y_share2_), std::minus{});
+    for(int i=0; i<Delta_y_share2_.size(); i++){
+         std::cout<< " MULT online::  y2= "<<Delta_y_share2_[i]<<std::endl;
+    }
+    //-----------------------y2 done
     this->output_->set_online_ready();
 
+  }else if(my_id==1){
+    for(int i=0; i<this->input_b_->get_secret_share().size(); i++){
+      std::cout<<" MULT online lambda_y1 = " <<this->input_b_->get_secret_share()[i]<<std::endl;}
 
+      for(int i=0; i<this->input_a_->get_secret_share_0().size(); i++){
+        std::cout<<" MULT online lambda_x1 = " <<this->input_a_->get_secret_share_0()[i]<<std::endl;}
+
+      //y1=-lambda_x'.m_y - lambda_y'.m_x + (Gamma_xy - r)^1
+      //retrive gamma_r_1
+      for(int i=0; i<this->output_->get_secret_share_2().size(); i++){
+        std::cout<<" MULT online, gamma_r1 = "<< this->output_->get_secret_share_2()[i]<<std::endl;
+      }
+      std::vector<T> Delta_y_share1_;
+      this->output_->get_secret_share_2().resize(this->input_a_->get_num_simd());
+      Delta_y_share1_.resize(this->input_a_->get_num_simd());
+      std::transform(std::begin(Delta_y_share1_), std::end(Delta_y_share1_), std::begin(this->output_->get_secret_share_2()),
+                     std::begin(Delta_y_share1_), std::plus{});
+      //output_->get_public_share_2 has the gamma_r_1 share
+
+      std::vector<T> term5;
+      this->input_a_->get_secret_share().resize(this->input_a_->get_num_simd());
+      term5.resize(this->input_a_->get_num_simd());
+      std::transform(std::begin(this->input_a_->get_secret_share()), std::end(this->input_a_->get_secret_share()), std::begin(m_y),
+                     std::begin(term5), std::multiplies{});
+
+     term5.resize(this->input_a_->get_num_simd());
+     Delta_y_share1_.resize(this->input_a_->get_num_simd());
+     std::transform(std::begin(Delta_y_share1_), std::end(Delta_y_share1_), std::begin(term5),
+                    std::begin(Delta_y_share1_), std::minus{});
+
+
+      this->output_->set_online_ready();
+
+  }else if(my_id==2){
+    for(int i=0; i<this->input_b_->get_secret_share_1().size(); i++){
+      std::cout<<" MULT online lambda_y1 " <<this->input_b_->get_secret_share_1()[i]<<std::endl;}
+
+      for(int i=0; i<this->output_->get_public_share_2().size(); i++){
+        std::cout<<" MULT online gamma_r_0 " <<this->output_->get_public_share_2()[i]<<std::endl;}
+      for(int i=0; i<this->output_->get_secret_share_2().size(); i++){
+        std::cout<<" MULT online gamma_r_2 " <<this->output_->get_secret_share_2()[i]<<std::endl;}
+      //p2 does y0 and y1
+      std::vector<T
+
+    this->output_->set_online_ready();
   }
-  if(my_id==2){
-    std::cout<<" MULT online m_x "<<this->input_a_->get_public_share_3()[0]<<std::endl;
-    std::cout<<" MULT online m_y "<<this->input_b_->get_public_share()[0]<<std::endl;
-    std::cout<<" MULT online lambda_x0 " <<this->input_a_->get_secret_share_0()[0]<<std::endl;
-    std::cout<<" MULT online lambda_y0 " <<this->input_b_->get_public_share_1()[0]<<std::endl;
-    std::cout <<"MULT online lambda_x1 "<< this->input_a_->get_public_share_0()[0]<<std::endl;
-    std::cout <<"MULT online lambda_y1 "<< this->input_b_->get_secret_share_1()[0]<<std::endl;
-    std::cout<<" MULT online gamma_r_1 " <<this->output_->get_public_share_2()[0]<<std::endl;
-    std::cout<<" MULT online gamma_r_0 " <<this->output_->get_secret_share_2()[0]<<std::endl;
-    m_x = this->input_a_->get_public_share_3(); //Delta_a
-    m_y = this->input_b_->get_public_share();
-    //======y0=-lambda_x0.my -lambda_y0.mx + (gamma_ab0- r0)
-    //y0=Delta_y_share0_
-    std::vector<T> Delta_y_share0_; //y0
-    // this->output_->get_secret_share_2().resize(this->input_b_->get_num_simd());
-    Delta_y_share0_.resize(this->input_b_->get_num_simd());
-    std::transform(std::begin(this->output_->get_secret_share_2()),  std::end(this->output_->get_secret_share_2()), std::begin(Delta_y_share0_),
-                   std::begin(Delta_y_share0_), std::plus{}); // + gammaxy_r0
-    std::vector<T> term10;
-    // this->input_a_->get_secret_share_0().resize(this->input_a_->get_num_simd()); //lambda_x0
-    term10.resize(this->input_b_->get_num_simd());
-    std::transform(std::begin(this->input_a_->get_secret_share_0()),  std::end(this->input_a_->get_secret_share_0()), std::begin(m_y),
-                   std::begin(term10), std::multiplies{}); //lambda_x0.my
-    Delta_y_share0_.resize(this->input_b_->get_num_simd());
-    term10.resize(this->input_b_->get_num_simd());
-    std::transform(std::begin(Delta_y_share0_),  std::end(Delta_y_share0_), std::begin(term10),
-                   std::begin(Delta_y_share0_), std::minus{}); //lambda_x0.my
-    std::vector<T> term11; //lambda_y0.mx
-    // this->input_b_->get_secret_share_1().resize(this->input_b_->get_num_simd());
-    term11.resize(this->input_b_->get_num_simd());
-    std::transform(std::begin(this->input_b_->get_public_share_1()),  std::end(this->input_b_->get_public_share_1()), std::begin(m_x),
-                   std::begin(term11), std::multiplies{}); //lambda_y0.my
-    term11.resize(this->input_b_->get_num_simd());
-    Delta_y_share0_.resize(this->input_b_->get_num_simd());
-   std::transform(std::begin(Delta_y_share0_),  std::end(Delta_y_share0_), std::begin(term11),
-                  std::begin(Delta_y_share0_), std::minus{}); //
-   std::cout<<"  Delta_y_share0_ =y0  =" <<Delta_y_share0_[0]<<std::endl;
-   //y1= -lambda_x1.my - lambda_y1.mx + (gamma_xy_r1)
-   std::vector<T> Delta_y_share1_;
-   this->output_->get_public_share_2().resize(this->input_b_->get_num_simd());
-   Delta_y_share1_.resize(this->input_b_->get_num_simd());
-   std::transform(std::begin(Delta_y_share1_),  std::end(Delta_y_share1_), std::begin(this->output_->get_public_share_2()),
-                  std::begin(Delta_y_share1_), std::plus{}); //gamma_xy1-r1
-  std::vector<T> term13; //lambda_x1.my
-  this->input_a_->get_public_share_0().resize(this->input_a_->get_num_simd()); //lambda_x1
-  term13.resize(this->input_a_->get_num_simd());
-  std::transform(std::begin(this->input_a_->get_public_share_0()),  std::end(this->input_a_->get_public_share_0()), std::begin(m_y),
-                 std::begin(term13), std::multiplies{}); //lambda_x1.my
-   Delta_y_share1_.resize(this->input_a_->get_num_simd());
-   term13.resize(this->input_a_->get_num_simd());
-   std::transform(std::begin(Delta_y_share1_), std::end(Delta_y_share1_), std::begin(term13),
-    std::begin(Delta_y_share1_), std::minus{});
-    std::vector<T> term12; //lambda_y1.mx
-    this->input_b_->get_secret_share_1().resize(this->input_b_->get_num_simd());
-    term12.resize(this->input_b_->get_num_simd());
-    std::transform(std::begin(this->input_b_->get_secret_share_1()), std::end(this->input_b_->get_secret_share_1()), std::begin(m_x),
-                   std::begin(term12), std::multiplies{});
-   term12.resize(this->input_a_->get_num_simd());
-   Delta_y_share1_.resize(this->input_a_->get_num_simd());
-   std::transform(std::begin(Delta_y_share1_), std::end(Delta_y_share1_), std::begin(term12),
-                  std::begin(Delta_y_share1_), std::minus{});
-  std::cout<<"  Delta_y_share1_ =y1  =" <<Delta_y_share1_[0]<<std::endl; //correct
-  this->output_->set_online_ready();
-  }
-
-
 
 
   if constexpr (MOTION_VERBOSE_DEBUG) {

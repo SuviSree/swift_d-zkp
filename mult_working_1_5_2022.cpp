@@ -939,14 +939,9 @@ ArithmeticBEAVYOutputGate<T>::ArithmeticBEAVYOutputGate(std::size_t gate_id,
       input_(std::move(input)) {
   std::size_t my_id = beavy_provider_.get_my_id();
 
-  if (my_id==0){
-      share_future0_=beavy_provider_.register_for_ints_message<T>(1, gate_id_, input_->get_num_simd(),1);
-  }
-  else if(my_id==1){
-    share_future1_=beavy_provider_.register_for_ints_message<T>(0, gate_id_, input_->get_num_simd(),1);
-  }
-  else if(my_id==2){
-    share_future2_=beavy_provider_.register_for_ints_message<T>(0, gate_id_, input_->get_num_simd(),1);
+  if (output_owner_ == ALL_PARTIES || output_owner_ == my_id) {
+    share_future_ =
+        beavy_provider_.register_for_ints_message<T>(my_id == 2 ? 2 : 1 - my_id, gate_id_, input_->get_num_simd());
   }
 }
 
@@ -984,43 +979,44 @@ void ArithmeticBEAVYOutputGate<T>::evaluate_setup() {
     auto my_secret_share = input_->get_secret_share();
     //================================test========================================
     if(my_id==0){
+      //std::cout<< " O/p gate:: lambda_z0 " <<output_->get_secret_share_3()[0]<<std::endl;
       std::cout<< " O/p gate:: lambda_z0 input_->get_secret_share_3() " <<input_->get_secret_share_3()[0]<<std::endl;
-      std::cout<< " O/p gate:: lambda_z2 input_->get_public_share_3() " <<input_->get_public_share_3()[0]<<std::endl;
-      beavy_provider_.send_ints_message(1, gate_id_, input_->get_secret_share_3() , 1);
-      beavy_provider_.send_ints_message(2, gate_id_, input_->get_public_share_3() , 1);
+      std::cout<< " O/p gate:: lambda_z1 input_->get_public_share_3() " <<input_->get_public_share_3()[0]<<std::endl;
+      std::cout<< "o/p gate:: input_->get_secret_share "<<input_->get_secret_share()[0]<<std::endl;
+      std::cout<< "o/p gate:: input_->get_public_share "<<input_->get_public_share()[0]<<std::endl;
 
+      //std::cout<< " O/p gate:: lambda_z2 " <<output_->get_public_share_3()[0]<<std::endl;
     }
     else if(my_id==1){
       std::cout<< " O/p gate:: lambda_z1 input_->get_secret_share_3() " <<input_->get_secret_share_3()[0]<<std::endl;
       std::cout<< " O/p gate:: lambda_z2 input_->get_public_share_3() " <<input_->get_public_share_3()[0]<<std::endl;
-
-      beavy_provider_.send_ints_message(0, gate_id_, input_->get_secret_share_3() , 1);
-
-
+      std::cout<< "o/p gate:: input_->get_secret_share "<<input_->get_secret_share()[0]<<std::endl;
+      std::cout<< "o/p gate:: input_->get_public_share "<<input_->get_public_share()[0]<<std::endl;
     }
     else if(my_id ==2){
       std::cout<< " O/p gate:: lambda_z0 input_->get_secret_share_3() " <<input_->get_secret_share_3()[0]<<std::endl;
       std::cout<< " O/p gate:: lambda_z1 input_->get_public_share_3()" <<input_->get_public_share_3()[0]<<std::endl;
-
+      std::cout<< "o/p gate:: input_->get_secret_share "<<input_->get_secret_share()[0]<<std::endl;
+      std::cout<< "o/p gate:: input_->get_public_share "<<input_->get_public_share()[0]<<std::endl;
     }
-    // //======================================test======================================
-    //   if (output_owner_ == ALL_PARTIES) {
-    //       beavy_provider_.broadcast_ints_message(gate_id_, my_secret_share); //if reconstruction is sending to all parties, broadcast your secret share to everyone
-    //       for(int i=0; i<my_secret_share.size(); i++){
-    //             std::cout<< "inside output gate, my_secret_share value=  "<<my_secret_share[i]  <<std::endl;
-    //       }
-    //
-    //   } else {
-    //     beavy_provider_.joint_send_verify_ints_message(0,2,1, gate_id_, my_secret_share,1, 1 );
-    //     std::cout<<"inside output gate, JSend" <<std::endl;
-    //     beavy_provider_.joint_send_verify_ints_message(0,2,1, gate_id_, my_secret_share,1, 1 );
-    //     beavy_provider_.joint_send_verify_ints_message(0,1,2, gate_id_, my_secret_share,1, 1 );
-    //     //beavy_provider_.send_ints_message(output_owner_, gate_id_, my_secret_share); //if reconstruction is being done by 1 party, send to that party
-    //   }
-    //   for(int i = 0; i < my_secret_share.size(); i++) {
-    //     std::cout <<"my_id="<< my_id << " my_secret_share= lambdaz0 lambdaz1"<< my_secret_share[i]<<" " <<std::endl;
-    //   }
-    //   std::cout<<"\n"<<std::endl;
+    //======================================test======================================
+    if (output_owner_ == ALL_PARTIES) {
+      beavy_provider_.broadcast_ints_message(gate_id_, my_secret_share); //if reconstruction is sending to all parties, broadcast your secret share to everyone
+      for(int i=0; i<my_secret_share.size(); i++){
+            std::cout<< "inside output gate, my_secret_share value=  "<<my_secret_share[i]  <<std::endl;
+      }
+
+      } else {
+      beavy_provider_.joint_send_verify_ints_message(0,2,1, gate_id_, my_secret_share,1, 1 );
+      std::cout<<"inside output gate, JSend" <<std::endl;
+      beavy_provider_.joint_send_verify_ints_message(0,2,1, gate_id_, my_secret_share,1, 1 );
+      beavy_provider_.joint_send_verify_ints_message(0,1,2, gate_id_, my_secret_share,1, 1 );
+      //beavy_provider_.send_ints_message(output_owner_, gate_id_, my_secret_share); //if reconstruction is being done by 1 party, send to that party
+    }
+    for(int i = 0; i < my_secret_share.size(); i++) {
+      std::cout <<"my_id="<< my_id << " my_secret_share= lambdaz0 lambdaz1"<< my_secret_share[i]<<" " <<std::endl;
+    }
+    std::cout<<"\n"<<std::endl;
   }
 
 
@@ -1045,54 +1041,45 @@ void ArithmeticBEAVYOutputGate<T>::evaluate_online() {
 
 
   std::size_t my_id = beavy_provider_.get_my_id();
-
+  if (my_id==2){
+  //   std::cout<<"\n no output gate online phase for p2 \n "<<std::endl;
+  //   std::size_t last_mult_gate_id=2;
+    //beavy_provider_.DIZK_verify(last_mult_gate_id);
+    return;
+  }
   std::cout<<"inside ArithmeticBEAVYOutputGate<T>::evaluate_online()" <<std::endl;
   if (output_owner_ == ALL_PARTIES || output_owner_ == my_id) {
     input_->wait_setup();
-    std::vector<T> total_mask(1);
-    std::vector<T> og_val(1);
-    if(my_id==0){
-       auto lambda_z1=share_future0_.get();
-       std::cout<<" O/P online:: lambda_z0 "<<input_->get_secret_share_3()[0]<<std::endl;
-       std::cout<<" O/P Online:: lambda_z1 "<<lambda_z1[0]<<std::endl;
-       std::cout<<" O/P online:: lambda_z2 "<<input_->get_public_share_3()[0]<<std::endl;
-       std::transform(std::begin(input_->get_secret_share_3()), std::end(input_->get_secret_share_3()),
-                      std::begin(lambda_z1), std::begin(total_mask), std::plus{});
-      std::transform(std::begin(total_mask), std::end(total_mask),
-                     std::begin(input_->get_public_share_3()), std::begin(total_mask), std::plus{});
-    }else if(my_id==1){
-      auto lambda_z0=share_future1_.get();
-      std::cout<<" O/P online:: lambda_z0 "<<lambda_z0[0]<<std::endl;
-      std::cout<<" O/P Online:: lambda_z1 "<<input_->get_secret_share_3()[0]<<std::endl;
-      std::cout<<" O/P online:: lambda_z2 "<<input_->get_public_share_3()[0]<<std::endl;
-      std::transform(std::begin(input_->get_secret_share_3()), std::end(input_->get_secret_share_3()),
-                     std::begin(lambda_z0), std::begin(total_mask), std::plus{});
-     std::transform(std::begin(total_mask), std::end(total_mask),
-                    std::begin(input_->get_public_share_3()), std::begin(total_mask), std::plus{});
-    }else if(my_id==2){
-      auto lambda_z2=share_future1_.get();
-      std::cout<<" O/P online:: lambda_z0 "<<input_->get_secret_share_3()[0]<<std::endl;
-      std::cout<<" O/P Online:: lambda_z1 "<<input_->get_public_share_3()[0]<<std::endl;
-      std::cout<<" O/P online:: lambda_z2 "<<lambda_z2[0]<<std::endl;
-      std::transform(std::begin(input_->get_secret_share_3()), std::end(input_->get_secret_share_3()),
-                     std::begin(lambda_z2), std::begin(total_mask), std::plus{});
-     std::transform(std::begin(total_mask), std::end(total_mask),
-                    std::begin(input_->get_public_share_3()), std::begin(total_mask), std::plus{});
-                    return;
-    }
+    // constitutes v = mv- lambdav1 - lambdav2 - lambdav3;
+    auto my_secret_share = input_->get_secret_share();
+    const auto other_secret_share = share_future_.get();
+    std::transform(std::begin(my_secret_share), std::end(my_secret_share),
+                   std::begin(other_secret_share), std::begin(my_secret_share), std::plus{}); // lambda x0 + lambdax1 = lambdax
     input_->wait_online();
+    //input_->get_public_share --- this is mv
+
+    //v=mv-lambda_v1- lambdav2- lambdav3
+
     std::transform(std::begin(input_->get_public_share()), std::end(input_->get_public_share()),
-                   std::begin(total_mask), std::begin(og_val), std::minus{});
-    std::cout<< " O/P gate:: og_val"<<og_val[0]<<std::endl;
-    output_promise_.set_value(std::move(og_val));
-    // for(int i = 0; i < my_secret_share.size(); i++) {
-    //   std::cout <<"my_id="<< my_id << " input_->get_public_share my_secret_share= "<< my_secret_share[i]<<" " <<std::endl;
-    // }
-    // for(int i = 0; i < my_secret_share.size(); i++) {
-    //   std::cout <<"my_id="<< my_id << " my_secret_share= "<< my_secret_share[i]<<" " <<std::endl;
-    // }
-    //
-    // std::cout<<"value set in output promise"<<"\n"<<std::endl;
+                   std::begin(my_secret_share), std::begin(my_secret_share), std::minus{});
+    output_promise_.set_value(std::move(my_secret_share));
+    for(int i = 0; i < my_secret_share.size(); i++) {
+      std::cout <<"my_id="<< my_id << " input_->get_public_share my_secret_share= "<< my_secret_share[i]<<" " <<std::endl;
+    }
+    for(int i = 0; i < my_secret_share.size(); i++) {
+      std::cout <<"my_id="<< my_id << " my_secret_share= "<< my_secret_share[i]<<" " <<std::endl;
+    }
+
+    std::cout<<"value set in output promise"<<"\n"<<std::endl;
+
+    // if (_numgatesshared == NUMMULGATES) {
+    //   std::size_t last_mult_gate_id=gate_id;
+      // beavy_provider_.initiali();
+
+      //OG
+      // std::size_t last_mult_gate_id=2;
+      // beavy_provider_.DIZK_verify(last_mult_gate_id);
+
   }
 
 
@@ -1621,19 +1608,6 @@ std::cout <<"my_id="<< my_id << " MULT gamma_r_2 "<< gamma_r_2[0]<<" " <<std::en
  this->output_->get_public_share_2()=gamma_r_2;
  this->output_->set_setup_ready();
 
- std::cout<<"\n----------------CONSISTENCY CHECK--------------------\n"<<std::endl;
- std::cout<< " MULT: u1 "<<u1[0]<<std::endl;
- std::cout<< " MULT: u2 "<<u2[0]<<std::endl;
- std::cout<< " MULT: v1 "<<v1[0]<<std::endl;
- std::cout<< " MULT: v2 "<<v2[0]<<std::endl;
- std::cout<<"\n----------------CONSISTENCY CHECK--------------------\n"<<std::endl;
-
-
- beavy_provider_.set_cckt(this-> gate_id_, u1, u2, v1, v2, z0, alpha0);
-
- std::size_t last_mult_gate_id=99;
- beavy_provider_.DIZK_verify(last_mult_gate_id);
-
 
 
 } //end of party 0
@@ -1795,15 +1769,6 @@ std::cout <<"my_id="<< my_id << " MULT gamma_r_2 "<< gamma_r_2[0]<<" " <<std::en
     this->output_->get_public_share_2()=gamma_r_1; //onner ta
     this->output_->set_setup_ready();
 
-    std::vector<T> zero_v(1);
-    zero_v.push_back(0);
-
-    beavy_provider_.set_cckt(this-> gate_id_, u1, zero_v, v1, zero_v, z2, row10);
-    std::size_t last_mult_gate_id=99;
-    beavy_provider_.DIZK_verify(last_mult_gate_id);
-    // this->output_->set_setup_ready();
-
-
     }
     if(my_id==2){
       lambda_x0.push_back(this->input_a_->get_secret_share_0()[0]);
@@ -1950,16 +1915,6 @@ std::cout <<"my_id="<< my_id << " MULT gamma_r_2 "<< gamma_r_2[0]<<" " <<std::en
     this->output_->get_secret_share_2()=gamma_r_0; //nijer ta
     this->output_->get_public_share_2()=gamma_r_1; //onner ta
     this->output_->set_setup_ready();
-
-    std::vector<T> zero_v(1);
-    zero_v.push_back(0);
-    //
-    // beavy_provider_.set_cckt(this->gate_id_, zero_v, u2, zero_v, v2, zero_v, row20);
-    beavy_provider_.set_cckt(this->gate_id_, u1, u2, v1, v2, zero_v, row20);
-    std::size_t last_mult_gate_id=99;
-    beavy_provider_.DIZK_verify(last_mult_gate_id);
-    // this->output_->set_setup_ready();
-
     }
 
 
@@ -2574,3 +2529,4 @@ template class BooleanXArithmeticBEAVYMULGate<std::uint32_t>;
 template class BooleanXArithmeticBEAVYMULGate<std::uint64_t>;
 
 }  // namespace MOTION::proto::beavy
+

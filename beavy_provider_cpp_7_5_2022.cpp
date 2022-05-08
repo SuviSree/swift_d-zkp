@@ -1360,15 +1360,15 @@ void BEAVYProvider::DIZK_verify (std::size_t last_mult_gate_id) {
 
   ZZ_pE theta[NUMcGATES]; //prottek party has diff theta.
   //but they will be populated using the same value
-  // ZZ_pE r;
+  ZZ_pE r;
 
   int j=0;
   if(my_id_==0){
     auto& rng5 = motion_base_provider_.get_my_randomness_generator(my_id_);
-    auto t=rng5.GetUnsigned<uint64_t>(last_mult_gate_id, NUMcGATES);
-    // conv(r,t[0]);
+    auto t=rng5.GetUnsigned<uint64_t>(last_mult_gate_id, NUMcGATES+1);
+    conv(r,t[0]);
     // std::cout<< "DIZK_verify:: r for Round2 = "<< r <<std::endl;
-    for(int i=0; i<NUMcGATES; i++){
+    for(int i=1; i<NUMcGATES; i++){
         std::cout<<"t["<<i<<"]"<<t[i]<<std::endl;
 
         conv(theta[j],t[i]);
@@ -1378,10 +1378,10 @@ void BEAVYProvider::DIZK_verify (std::size_t last_mult_gate_id) {
     }
   }else if(my_id_==1){
     auto& rng5 = motion_base_provider_.get_our_randomness_generator(0);
-    auto t=rng5.GetUnsigned<uint64_t>(last_mult_gate_id, NUMcGATES);
-    // conv(r,t[0]);
-    // std::cout<< "DIZK_verify:: r for Round2 = "<< r <<std::endl;
-    for(int i=0; i<NUMcGATES; i++){
+    auto t=rng5.GetUnsigned<uint64_t>(last_mult_gate_id, NUMcGATES+1);
+    conv(r,t[0]);
+    std::cout<< "DIZK_verify:: r for Round2 = "<< r <<std::endl;
+    for(int i=1; i<NUMcGATES+1; i++){
         std::cout<<"t["<<i<<"]"<<t[i]<<std::endl;
 
         conv(theta[j],t[i]);
@@ -1391,10 +1391,10 @@ void BEAVYProvider::DIZK_verify (std::size_t last_mult_gate_id) {
     }
   }else if(my_id_==2){
     auto& rng5 = motion_base_provider_.get_our_randomness_generator(0);
-    auto t=rng5.GetUnsigned<uint64_t>(last_mult_gate_id, NUMcGATES);
-    // conv(r, t[0]);
-    // std::cout<< "DIZK_verify:: r for Round2 = "<< r <<std::endl;
-    for(int i=0; i<NUMcGATES; i++){
+    auto t=rng5.GetUnsigned<uint64_t>(last_mult_gate_id, NUMcGATES+1);
+    conv(r, t[0]);
+    std::cout<< "DIZK_verify:: r for Round2 = "<< r <<std::endl;
+    for(int i=0; i<NUMcGATES+1; i++){
         std::cout<<"t["<<i<<"]"<<t[i]<<std::endl;
 
         conv(theta[j],t[i]);
@@ -1529,14 +1529,10 @@ t2.push_back(vp2[0][0]);
 
   std::cout<<" \n --- inside DIZK, before send_ints_message \n "<<std::endl;
   send_ints_message((my_id_ + 1)%3, gate_id_prev, t1, 1);
-  for(int i=0; i<t1.size(); i++)
-    std::cout<<"t1               "<<t1[i]<<std::endl;
   std::cout<<" \n --- inside DIZK, after 1st send_ints_message \n "<<std::endl;
   //send_ints_message((my_id_ - 1)%3, gate_id_next, t2);
   send_ints_message((my_id_ + 2)%3, gate_id_next, t2, 1);
   std::cout<<" \n --- inside DIZK, after 2nd send_ints_message \n "<<std::endl;
-  for(int i=0; i<t2.size(); i++)
-    std::cout<<"t2               "<<t2[i]<<std::endl;
   //
   // // receive from my_id-1 : pi3, my_id+1: pi4
   ZZ_pE pi3[6*NUMcGATES + 2*NUMgGATES + 1];
@@ -2269,3 +2265,4 @@ std::cout<<"\n\n";
 
 
 }  // namespace MOTION::proto::beavy
+

@@ -239,7 +239,6 @@ class ArithmeticBEAVYInputGateReceiver : public NewGate {
   ArithmeticBEAVYWireP<T>& get_output_wire() noexcept { return output_; }
   // std::vector<ENCRYPTO::ReusableFiberFuture<std::vector<T>>> share_futures_;
   ENCRYPTO::ReusableFiberFuture<std::vector<T>> public_share_future_;
-  ENCRYPTO::ReusableFiberFuture<std::vector<T>> public_share_future2_;
   // std::vector<ENCRYPTO::ReusableFiberFuture<std::vector<T>>> public_share_future_;
   std::vector<ENCRYPTO::ReusableFiberFuture<std::vector<T>>> share_futures_;
 
@@ -279,9 +278,7 @@ class ArithmeticBEAVYOutputGate : public NewGate {
   std::size_t num_wires_;
   std::size_t output_owner_;
   ENCRYPTO::ReusableFiberPromise<std::vector<T>> output_promise_;
-  ENCRYPTO::ReusableFiberFuture<std::vector<T>> share_future0_;
-  ENCRYPTO::ReusableFiberFuture<std::vector<T>> share_future1_;
-  ENCRYPTO::ReusableFiberFuture<std::vector<T>> share_future2_;
+  ENCRYPTO::ReusableFiberFuture<std::vector<T>> share_future_;
   const ArithmeticBEAVYWireP<T> input_;
 };
 
@@ -398,7 +395,7 @@ template <typename T>class ArithmeticBEAVYMULGate : public detail::BasicArithmet
   void Pass(int party_id, std::size_t num_simd, std::size_t input_id_);
   //added
   // std::vector<ENCRYPTO::ReusableFiberFuture<std::vector<T>>> Setupshare_futures_;
-//std::vector<ENCRYPTO::ReusableFiberFuture<std::vector<T>>> share_futures_;
+std::vector<ENCRYPTO::ReusableFiberFuture<std::vector<T>>> share_futures_;
 
 // ENCRYPTO::ReusableFiberFuture<std::vector<T>> Setup_share_futures_;
 
@@ -408,20 +405,9 @@ ENCRYPTO::ReusableFiberFuture<std::vector<T>> share_future_online_;
 // std::vector<ENCRYPTO::ReusableFiberFuture<std::vector<T>>> share_futures1_;
 // std::vector<ENCRYPTO::ReusableFiberFuture<std::vector<T>>> share_futures2_;
 // ENCRYPTO::ReusableFiberFuture<std::vector<T>> share_futures2_;
-//ENCRYPTO::ReusableFiberFuture<std::vector<T>> share_futures0_;
-//ENCRYPTO::ReusableFiberFuture<std::vector<T>> share_futures1_;
-ENCRYPTO::ReusableFiberFuture<std::vector<T>> share_future0_;
-ENCRYPTO::ReusableFiberFuture<std::vector<T>> share_future1_;
-ENCRYPTO::ReusableFiberFuture<std::vector<T>> share_future2_;
-
-
-ENCRYPTO::ReusableFiberFuture<std::vector<T>> share_future00_;
-ENCRYPTO::ReusableFiberFuture<std::vector<T>> share_future11_;
-ENCRYPTO::ReusableFiberFuture<std::vector<T>> share_future01_;
-ENCRYPTO::ReusableFiberFuture<std::vector<T>> share_future10_;
+ENCRYPTO::ReusableFiberFuture<std::vector<T>> share_futures0_;
+ENCRYPTO::ReusableFiberFuture<std::vector<T>> share_futures1_;
 std::vector<T> delta_ab_share1;
-// std::vector<T> d_;
-// std::vector<T> e_;
 
 
 
@@ -429,30 +415,9 @@ std::vector<T> delta_ab_share1;
  private:
   BEAVYProvider& beavy_provider_;
 
-  //std::vector<T> Delta_y_share_;
+  std::vector<T> Delta_y_share_;
   std::vector<T> Delta_y_share0_;
   std::vector<T> Delta_y_share1_;
-  std::vector<T> Delta_y_share2_;
-
-  std::vector<T> lambda_x0;
-  std::vector<T> lambda_y0;
-  std::vector<T> lambda_x1;
-  std::vector<T> lambda_y1;
-
-  std::vector<T> lambda_x2;
-  std::vector<T> lambda_y2;
-  // std::vector<T> lambda_z0;
-  // std::vector<T> lambda_z1;
-  // std::vector<T> lambda_z2;
-
-
-  // std::vector<T> z0(num_simd_);
-  // std::vector<T> z1(num_simd_);
-  // std::vector<T> z2(num_simd_);
-
-
-
-
   //added
 
 
@@ -463,7 +428,6 @@ protected: //suvi
   beavy::ArithmeticBEAVYWireP<T> temp_;
   //MOTION::proto::beavy::ArithmeticBEAVYInputGateSender<T>&& ArithSend_;
   // std::vector<ENCRYPTO::ReusableFiberFuture<std::vector<T>>> Setup_share_futures_;
-
 
 };
 

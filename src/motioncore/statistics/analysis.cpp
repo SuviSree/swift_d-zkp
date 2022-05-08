@@ -29,6 +29,7 @@
 #include <boost/accumulators/statistics/variance.hpp>
 #include <boost/core/alloc_construct.hpp>
 #include <boost/json.hpp>
+#include <iostream>
 
 #include "communication/transport.h"
 #include "utility/runtime_info.h"
@@ -66,6 +67,7 @@ static std::string format_line(std::string name, std::string unit,
   ss << fmt::format("{:{}.3f} {:s} ", boost::accumulators::mean(accumulator), field_width, unit);
   ss << fmt::format("{:{}.3f} {:s} ", boost::accumulators::median(accumulator), field_width, unit);
   // uncorrected standard deviation
+  std::cout << "XLJOHKLBHK " << boost::accumulators::variance(accumulator) << std::endl;
   ss << fmt::format("{:{}.3f} {:s}", std::sqrt(boost::accumulators::variance(accumulator)),
                     field_width, unit);
   ss << "\n";

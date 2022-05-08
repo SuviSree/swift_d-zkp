@@ -1279,13 +1279,7 @@ void convert_uint64_t_pE(uint64_t val[], ZZ_pE a){
   conv(a, temp);
 }
 
-void BEAVYProvider::set_cckt(std::size_t gate_id,
-                            std::vector<uint64_t>& ui,
-                            std::vector<uint64_t>& ui1,
-                            std::vector<uint64_t>& vi,
-                            std::vector<uint64_t>& vi1,
-                            std::vector<uint64_t>& zi,
-                            std::vector<uint64_t>& alphai) {
+void BEAVYProvider::set_cckt(std::size_t gate_id, std::vector<uint64_t>& ui, std::vector<uint64_t>& ui1, std::vector<uint64_t>& vi, std::vector<uint64_t>& vi1, std::vector<uint64_t>& zi, std::vector<uint64_t>& zj, std::vector<uint64_t>& alphai, std::vector<uint64_t>& rowi, std::vector<uint64_t>& rowj) {
     initiali();
     std::cout<< " set_cckt:: u1 received "<<ui[0]<<std::endl;
     _shares[0 + 6*_numgatesshared] = conv<ZZ_pE>(ui[0]);
@@ -1299,20 +1293,72 @@ void BEAVYProvider::set_cckt(std::size_t gate_id,
     std::cout<< " set_cckt:: v2 received "<<vi1[0]<<std::endl;
     _shares[3 + 6*_numgatesshared] = conv<ZZ_pE>(vi1[0]);
     std::cout<< " set_cckt:: _shares "<< _shares[3 + 6*_numgatesshared] <<std::endl;
-    std::cout<< " set_cckt:: alphai received "<<alphai[0]<<std::endl;
-    _shares[4 + 6*_numgatesshared] = conv<ZZ_pE>(alphai[0]);
-    std::cout<< " set_cckt:: _shares "<< _shares[4 + 6*_numgatesshared] <<std::endl;
+
     std::cout<< " set_cckt:: zi received "<<zi[0]<<std::endl;
-    _shares[5 + 6*_numgatesshared] = conv<ZZ_pE>(zi[0]);
+    _shares[4 + 6*_numgatesshared] = conv<ZZ_pE>(zi[0]);
+    std::cout<< " set_cckt:: _shares "<< _shares[4 + 6*_numgatesshared] <<std::endl;
+    std::cout<< " set_cckt:: zj received "<<zj[0]<<std::endl;
+    _shares[5 + 6*_numgatesshared] = conv<ZZ_pE>(zj[0]);
     std::cout<< " set_cckt:: _shares "<< _shares[5 + 6*_numgatesshared] <<std::endl;
+
+    std::cout<< " set_cckt:: alphai received "<<alphai[0]<<std::endl;
+    _shares[6 + 6*_numgatesshared] = conv<ZZ_pE>(alphai[0]);
+    std::cout<< " set_cckt:: _shares "<< _shares[5 + 6*_numgatesshared] <<std::endl;
+
+    std::cout<< " set_cckt:: row(i-1) received "<<rowi[0]<<std::endl;
+    _shares[7 + 6*_numgatesshared] = conv<ZZ_pE>(rowi[0]);
+    std::cout<< " set_cckt:: _shares "<< _shares[7 + 6*_numgatesshared] <<std::endl;
+
+    std::cout<< " set_cckt:: row(i+1) received "<<rowj[0]<<std::endl;
+    _shares[8 + 6*_numgatesshared] = conv<ZZ_pE>(rowj[0]);
+    std::cout<< " set_cckt:: _shares "<< _shares[8 + 6*_numgatesshared] <<std::endl;
 
     // uint64_t tmp6=_shares[5 + 6*_numgatesshared];
     // uint64_t tmp=tmp1
     //==================================CONSISTENCY CHECK====================================
     //ui*vi + ui.v(i-1) + u(i-1).vi + alphai -zi
-    ZZ_pE temp= (_shares[0 + 6*_numgatesshared]*_shares[2 + 6*_numgatesshared]) + (_shares[0 + 6*_numgatesshared]*_shares[3 + 6*_numgatesshared]) + (_shares[1 + 6*_numgatesshared] * _shares[2 + 6*_numgatesshared]) + _shares[4 + 6*_numgatesshared]  - _shares[5 + 6*_numgatesshared] ;
+    ZZ_pE temp= (_shares[0 + 6*_numgatesshared]*_shares[2 + 6*_numgatesshared]) + (_shares[0 + 6*_numgatesshared]*_shares[3 + 6*_numgatesshared]) + (_shares[1 + 6*_numgatesshared] * _shares[2 + 6*_numgatesshared]) + _shares[6 + 6*_numgatesshared]  - _shares[4 + 6*_numgatesshared] ;
     // std::cout<<" set_cckt::: data type of temp " << typeid(temp).name()<<std::endl
     std::cout<<" set_cckt::: value of temp "<<temp<<std::endl;
+
+
+      ZZ_pX zero1;
+      SetCoeff(zero1,0,0);
+      ZZ_pE zero;
+      conv(zero,zero1);
+
+    std::cout<<" DIZK_verify:: reached here3"<<std::endl;
+
+    //pi
+    share_Round1[0 + 6*_numgatesshared]=_shares[0 + 6*_numgatesshared];
+    share_Round1[1 + 6*_numgatesshared]=_shares[1 + 6*_numgatesshared];
+    share_Round1[2 + 6*_numgatesshared]=_shares[2 + 6*_numgatesshared];
+    share_Round1[3 + 6*_numgatesshared]=_shares[3 + 6*_numgatesshared];
+    share_Round1[4 + 6*_numgatesshared]=_shares[6 + 6*_numgatesshared]; //alphai
+    share_Round1[5 + 6*_numgatesshared]=_shares[4 + 6*_numgatesshared]; //zi
+
+  std::cout<<" DIZK_verify:: reached here4"<<std::endl;
+    //p_(i-1)
+    share_Round2_1[0 + 6*_numgatesshared]=_shares[0 + 6*_numgatesshared];
+    share_Round2_1[1 + 6*_numgatesshared]=zero;
+    share_Round2_1[2 + 6*_numgatesshared]=_shares[2 + 6*_numgatesshared];
+    share_Round2_1[3 + 6*_numgatesshared]=zero;
+    share_Round2_1[4 + 6*_numgatesshared]=_shares[7 + 6*_numgatesshared];
+    //share_Round2_1[5 + 6*_numgatesshared]=_shares[4 + 6*_numgatesshared]; //zi
+    share_Round2_1[5 + 6*_numgatesshared]=_shares[5 + 6*_numgatesshared]; //z(i-1)
+
+  std::cout<<" DIZK_verify:: reached here5"<<std::endl;
+    //p_(i+1)
+    share_Round2_2[0 + 6*_numgatesshared]=zero;
+    share_Round2_2[1 + 6*_numgatesshared]=_shares[1 + 6*_numgatesshared];
+    share_Round2_2[2 + 6*_numgatesshared]=zero;
+    share_Round2_2[3 + 6*_numgatesshared]=_shares[3 + 6*_numgatesshared];
+    share_Round2_2[4 + 6*_numgatesshared]=_shares[8 + 6*_numgatesshared];
+    //share_Round2_1[5 + 6*_numgatesshared]=_shares[5 + 6*_numgatesshared]; //z(i-1)
+    share_Round2_1[5 + 6*_numgatesshared]=zero;
+
+  std::cout<<" DIZK_verify:: reached here6"<<std::endl;
+
 
     ++_numgatesshared;
 
@@ -1345,6 +1391,12 @@ void BEAVYProvider::DIZK_verify (std::size_t last_mult_gate_id) {
   auto share_future_prev2 = register_for_ints_message<uint64_t>(((pid + 2)%3), gate_id_prev, 1, 3);
   auto share_future_prev3 = register_for_ints_message<uint64_t>(((pid + 2)%3), gate_id_prev, 1, 4);
 
+  std::cout<<"DIZK_verify:: reached here"<<std::endl;
+
+
+  // ZZ_pE share_Round3(6*NUMMULGATES);
+
+  std::cout<<"DIZK_verify:: reached here2"<<std::endl;
 
 
 
@@ -1360,15 +1412,15 @@ void BEAVYProvider::DIZK_verify (std::size_t last_mult_gate_id) {
 
   ZZ_pE theta[NUMcGATES]; //prottek party has diff theta.
   //but they will be populated using the same value
-  // ZZ_pE r;
+  ZZ_pE r;
 
   int j=0;
   if(my_id_==0){
     auto& rng5 = motion_base_provider_.get_my_randomness_generator(my_id_);
-    auto t=rng5.GetUnsigned<uint64_t>(last_mult_gate_id, NUMcGATES);
-    // conv(r,t[0]);
+    auto t=rng5.GetUnsigned<uint64_t>(last_mult_gate_id, NUMcGATES+1);
+    conv(r,t[0]);
     // std::cout<< "DIZK_verify:: r for Round2 = "<< r <<std::endl;
-    for(int i=0; i<NUMcGATES; i++){
+    for(int i=1; i<NUMcGATES; i++){
         std::cout<<"t["<<i<<"]"<<t[i]<<std::endl;
 
         conv(theta[j],t[i]);
@@ -1378,10 +1430,10 @@ void BEAVYProvider::DIZK_verify (std::size_t last_mult_gate_id) {
     }
   }else if(my_id_==1){
     auto& rng5 = motion_base_provider_.get_our_randomness_generator(0);
-    auto t=rng5.GetUnsigned<uint64_t>(last_mult_gate_id, NUMcGATES);
-    // conv(r,t[0]);
-    // std::cout<< "DIZK_verify:: r for Round2 = "<< r <<std::endl;
-    for(int i=0; i<NUMcGATES; i++){
+    auto t=rng5.GetUnsigned<uint64_t>(last_mult_gate_id, NUMcGATES+1);
+    conv(r,t[0]);
+    std::cout<< "DIZK_verify:: r for Round2 = "<< r <<std::endl;
+    for(int i=1; i<NUMcGATES+1; i++){
         std::cout<<"t["<<i<<"]"<<t[i]<<std::endl;
 
         conv(theta[j],t[i]);
@@ -1391,10 +1443,10 @@ void BEAVYProvider::DIZK_verify (std::size_t last_mult_gate_id) {
     }
   }else if(my_id_==2){
     auto& rng5 = motion_base_provider_.get_our_randomness_generator(0);
-    auto t=rng5.GetUnsigned<uint64_t>(last_mult_gate_id, NUMcGATES);
-    // conv(r, t[0]);
-    // std::cout<< "DIZK_verify:: r for Round2 = "<< r <<std::endl;
-    for(int i=0; i<NUMcGATES; i++){
+    auto t=rng5.GetUnsigned<uint64_t>(last_mult_gate_id, NUMcGATES+1);
+    conv(r, t[0]);
+    std::cout<< "DIZK_verify:: r for Round2 = "<< r <<std::endl;
+    for(int i=0; i<NUMcGATES+1; i++){
         std::cout<<"t["<<i<<"]"<<t[i]<<std::endl;
 
         conv(theta[j],t[i]);
@@ -1481,7 +1533,7 @@ void BEAVYProvider::DIZK_verify (std::size_t last_mult_gate_id) {
   //BEAVYProvider::Round1(share, f,theta, pi, pi1, pi2);
   for(int i=0;  i < 6 * NUMMULGATES; i++)
     std::cout<<" shares = " <<_shares[i]<<std::endl;
-  Round1(_shares, f, theta, pi, pi1, pi2);
+  Round1(share_Round1, f, theta, pi, pi1, pi2);
 
   uint64_t pi_64[6*NUMcGATES + 2*NUMgGATES + 1][d];
   for(int i=0; i<6*NUMcGATES + 2*NUMgGATES + 1; i++){
@@ -1529,14 +1581,10 @@ t2.push_back(vp2[0][0]);
 
   std::cout<<" \n --- inside DIZK, before send_ints_message \n "<<std::endl;
   send_ints_message((my_id_ + 1)%3, gate_id_prev, t1, 1);
-  for(int i=0; i<t1.size(); i++)
-    std::cout<<"t1               "<<t1[i]<<std::endl;
   std::cout<<" \n --- inside DIZK, after 1st send_ints_message \n "<<std::endl;
   //send_ints_message((my_id_ - 1)%3, gate_id_next, t2);
   send_ints_message((my_id_ + 2)%3, gate_id_next, t2, 1);
   std::cout<<" \n --- inside DIZK, after 2nd send_ints_message \n "<<std::endl;
-  for(int i=0; i<t2.size(); i++)
-    std::cout<<"t2               "<<t2[i]<<std::endl;
   //
   // // receive from my_id-1 : pi3, my_id+1: pi4
   ZZ_pE pi3[6*NUMcGATES + 2*NUMgGATES + 1];
@@ -1565,7 +1613,7 @@ ZZ_pE P_r_t;
 ZZ_pE b_t;
 
   //Round2(_share, pi3 /*DIZK_share[]*/, f, a1, a2, a3);
-  Round2(_shares, Beta, pi3, f, fp_r, P_r_t, b_t);
+  Round2(share_Round2_1, Beta, pi3, f, fp_r, P_r_t, b_t);
 
   std::cout<<" after Round 2, fp_r populated= "<<fp_r[0] << std::endl;
   std::cout<<" After Round 2, P_r_t populated= "<<P_r_t <<std::endl;
@@ -1577,7 +1625,7 @@ std::cout<<"\n ========================== at the end of 1st run of Round2 ======
   ZZ_pE P_r_t_1;
   ZZ_pE b_t_1;
 
-  Round2(_shares, Beta, pi4, f, fp_r_1, P_r_t_1, b_t_1);
+  Round2(share_Round2_2, Beta, pi4, f, fp_r_1, P_r_t_1, b_t_1);
   // Round2(share, pi4 /*DIZK_share[]*/, f, g1, g2, g3);
  std::cout<<" \n ============= at the end of 2 times round 2 call================= \n "<<std::endl;
 
@@ -1646,11 +1694,11 @@ std::vector<uint64_t> t8, t9, t10;
 
 }
 
-void BEAVYProvider::set_cckt(std::size_t gate_id, std::vector<uint8_t>& ui, std::vector<uint8_t>& ui1, std::vector<uint8_t>& vi, std::vector<uint8_t>& vi1, std::vector<uint8_t>& alphai, std::vector<uint8_t>& zi){};
+void BEAVYProvider::set_cckt(std::size_t gate_id, std::vector<uint8_t>& ui, std::vector<uint8_t>& ui1, std::vector<uint8_t>& vi, std::vector<uint8_t>& vi1, std::vector<uint8_t>& zi, std::vector<uint8_t>& zj, std::vector<uint8_t>& alphai, std::vector<uint8_t>& rowi, std::vector<uint8_t>& rowj){};
 
-void BEAVYProvider::set_cckt(std::size_t gate_id, std::vector<uint16_t>& ui, std::vector<uint16_t>& ui1, std::vector<uint16_t>& vi, std::vector<uint16_t>& vi1, std::vector<uint16_t>& alphai, std::vector<uint16_t>& zi){};
+void BEAVYProvider::set_cckt(std::size_t gate_id, std::vector<uint16_t>& ui, std::vector<uint16_t>& ui1, std::vector<uint16_t>& vi, std::vector<uint16_t>& vi1, std::vector<uint16_t>& zi, std::vector<uint16_t>& zj, std::vector<uint16_t>& alphai, std::vector<uint16_t>& rowi, std::vector<uint16_t>& rowj){};
 
-void BEAVYProvider::set_cckt(std::size_t gate_id, std::vector<uint32_t>& ui, std::vector<uint32_t>& ui1, std::vector<uint32_t>& vi, std::vector<uint32_t>& vi1, std::vector<uint32_t>& alphai, std::vector<uint32_t>& zi ){};
+void BEAVYProvider::set_cckt(std::size_t gate_id, std::vector<uint32_t>& ui, std::vector<uint32_t>& ui1, std::vector<uint32_t>& vi, std::vector<uint32_t>& vi1, std::vector<uint32_t>& zi, std::vector<uint32_t>& zj, std::vector<uint32_t>& alphai, std::vector<uint32_t>& rowi, std::vector<uint32_t>& rowj){};
 
 //
 //

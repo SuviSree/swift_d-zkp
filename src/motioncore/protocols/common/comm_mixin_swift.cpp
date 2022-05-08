@@ -23,7 +23,6 @@
 #include "comm_mixin.h"
 
 #include <cstdint>
-#include <type_traits>
 #include <unordered_map>
 
 #include <boost/functional/hash.hpp>
@@ -35,20 +34,6 @@
 #include "utility/constants.h"
 #include "utility/logger.h"
 #include "openssl/sha.h"
-#include <sstream>
-#include <string>
-#include <iomanip>
-#include <stdio.h> /* C standard io header file */
-// #include "ntl-11.5.1/include/NTL/ZZ_p.h" /* Include all GFL header files */
-// #include "ntl-11.5.1/include/NTL/ZZ_pX.h"
-// #include "ntl-11.5.1/include/NTL/ZZ_pE.h"
-// #include "GFL/ALL.h"
-// #include <utility/bigint.h>
-// #include <NTL/ZZ_pXFactoring.h>
-//
-// #include <NTL/ZZ_p.h>
-// #include <NTL/ZZ_pX.h>
-// #include <NTL/ZZ_pE.h>
 
 namespace {
 
@@ -85,7 +70,7 @@ struct CommMixin::GateMessageHandler : public Communication::MessageHandler {
   // [KeyType -> promise]
   std::vector<std::unordered_map<KeyType, ENCRYPTO::ReusableFiberPromise<ENCRYPTO::BitVector<>>,
                                  SizeTPairHash>>
-      bits_promises_;
+      bits_promises_; // ALANNNN
   std::vector<std::unordered_map<KeyType, ENCRYPTO::ReusableFiberPromise<ENCRYPTO::block128_vector>,
                                  SizeTPairHash>>
       blocks_promises_;
@@ -221,7 +206,7 @@ void CommMixin::GateMessageHandler::received_message(std::size_t party_id,
     // for (auto x : promise_map) {
     //   std::cout << x.first << "  /* message */  " << x.second << std::endl;
     // }
-    std::cout << " size of promise map inside comm_mixing " << promise_map.size() << "GATE ID " << gate_id << "MSGNUM " << msg_num << "PID " << party_id << std::endl; // ALANNN
+    std::cout << " size of promise map inside comm_mixing " << promise_map.size() << std::endl;
     auto& promise = promise_map.at({gate_id, msg_num});
     auto ptr = reinterpret_cast<const decltype(type_tag)*>(payload->data());
     try {
@@ -555,7 +540,7 @@ template std::vector<ENCRYPTO::ReusableFiberFuture<std::vector<std::uint64_t>>>
 template <typename T>
 [[nodiscard]] ENCRYPTO::ReusableFiberFuture<std::vector<T>> CommMixin::register_for_ints_message(
     std::size_t party_id, std::size_t gate_id, std::size_t num_elements, std::size_t msg_num) {
-  // assert(party_id != my_id_); //suvi
+  // assert(party_id != my_id_); //suvi // ALANNN
   auto& mh = *message_handler_;
   ENCRYPTO::ReusableFiberPromise<std::vector<T>> promise;
   ENCRYPTO::ReusableFiberFuture<std::vector<T>> future = promise.get_future();
@@ -567,11 +552,10 @@ template <typename T>
         fmt::format("tried to register twice for message {} for gate {}", msg_num, gate_id));
   }
   {
-    std::cout << " REGISTER GATEID " << gate_id << " MSGNUM " << msg_num << "PARTYID " << party_id << std::endl;
     auto& promise_map = mh.get_promise_map<T>().at(party_id);
     auto [_, success] = promise_map.insert({std::make_pair(gate_id, msg_num), std::move(promise)});
     assert(success);
-  } // ALANNN
+  }
   if constexpr (MOTION_VERBOSE_DEBUG) {
     if (logger_) {
       logger_->LogTrace(fmt::format("Gate {}: registered for int message {} of size {}", gate_id,
@@ -589,7 +573,7 @@ template ENCRYPTO::ReusableFiberFuture<std::vector<std::uint32_t>>
     CommMixin::register_for_ints_message(std::size_t, std::size_t, std::size_t, std::size_t);
 template ENCRYPTO::ReusableFiberFuture<std::vector<std::uint64_t>>
     CommMixin::register_for_ints_message(std::size_t, std::size_t, std::size_t, std::size_t);
-/*
+
 template <typename T>
 void CommMixin::joint_send_ints_message(std:: size_t party_i, std::size_t party_j, std::size_t party_k, std::size_t gate_id, const std::vector<T>& message, std::size_t num_elements, std::size_t msg_num)
 {
@@ -666,210 +650,5 @@ template void
     CommMixin::joint_verify_ints_message(std::size_t, std::size_t, std::size_t, std::size_t, const std::vector<uint32_t>&, std::size_t, std::size_t);
 template void
     CommMixin::joint_verify_ints_message(std::size_t, std::size_t, std::size_t, std::size_t, const std::vector<uint64_t>&, std::size_t, std::size_t);
-*/
-std::string _sha256(std::string st)
-{
-  unsigned char hash[SHA256_DIGEST_LENGTH];
-  SHA256_CTX sha256;
-  SHA256_Init(&sha256);
-  SHA256_Update(&sha256, st.c_str(), st.size());
-  SHA256_Final(hash, &sha256);
-  std::stringstream ss;
-  for(int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
-    ss << std::hex << std::setw(2) << std::setfill('0') << (int)hash[i];
-  }
-  return ss.str();
-}
-
-// const std::vector<T>& message
-
-template <typename T>
-void CommMixin::joint_send_verify_ints_message (std:: size_t party_i, std::size_t party_j, std::size_t party_k, std::size_t gate_id, const std::vector<T>& message, std::size_t num_elements, std::size_t msg_num)
-{
-  // ENCRYPTO::ReusableFiberFuture<std::vector<T>> share_future_8;
-  // ENCRYPTO::ReusableFiberFuture<std::vector<T>> share_future_verify_8;
-  // ENCRYPTO::ReusableFiberFuture<std::vector<T>> share_future_16;
-  // ENCRYPTO::ReusableFiberFuture<std::vector<T>> share_future_verify_16;
-  // ENCRYPTO::ReusableFiberFuture<std::vector<T>> share_future_32;
-  // ENCRYPTO::ReusableFiberFuture<std::vector<T>> share_future_verify_32;
-  // ENCRYPTO::ReusableFiberFuture<std::vector<T>> share_future_64;
-  // ENCRYPTO::ReusableFiberFuture<std::vector<T>> share_future_verify_64;
-
-  // share_future_8 = new ENCRYPTO::ReusableFiberFuture<std::vector<T>>;
-  // share_future_verify_8 = new ENCRYPTO::ReusableFiberFuture<std::vector<T>>
-
-  // share_future_8 = new ENCRYPTO::ReusableFiberFuture<std::vector<std::uint8_t>>;
-  // share_future_verify_8 = new ENCRYPTO::ReusableFiberFuture<std::vector<std::uint8_t>>;
-  // share_future_16 = new ENCRYPTO::ReusableFiberFuture<std::vector<std::uint16_t>>;
-  // share_future_verify_16 = new ENCRYPTO::ReusableFiberFuture<std::vector<std::uint16_t>>;
-  // share_future_32 = new ENCRYPTO::ReusableFiberFuture<std::vector<std::uint32_t>>;
-  // share_future_verify_32 = new ENCRYPTO::ReusableFiberFuture<std::vector<std::uint32_t>>;
-  share_future_64 = new ENCRYPTO::ReusableFiberFuture<std::vector<std::uint64_t>>;
-  share_future_verify_64 = new ENCRYPTO::ReusableFiberFuture<std::vector<std::uint64_t>>;
-
-
-  std::cout<<"inside the joint_send_verify_ints_message" <<std::endl;
-  // gate_id_ = gate_id;
-  std::cout<<"inside the joint_send_verify_ints_message party 0" << " received gate id= "<< gate_id << "\t "<<std::endl;
-
-    if (my_id_ == party_i) {
-      communication_layer_.send_message(party_k, build_gate_message(0 , 1, message));
-      //for party 0, the gate_id was coming to be something as absurd as 1784944556768769879. WTF !! Was coming correct for other parties. Hence hardcoded it
-      std::cout<<"inside the joint_send_verify_ints_message party 0" << "gate id= "<< gate_id << "\t "<<std::endl;
-
-      for(int i = 0; i < message.size(); i++) {
-        std::cout <<" common message sent joint_send_verify_ints_message :: my_id= "<< my_id_ << "  common message sent == "<< message[i]<<" " <<std::endl;
-      }
-
-    } else if (my_id_ == party_j) {
-
-      joint_message_verify_64_1 = new std::vector<std::uint64_t>;
-
-
-
-
-
-      *joint_message_verify_64_1->insert(joint_message_verify_64_1->begin(), message.begin(), message.end());
-
-      std::stringstream shash;
-      std::copy(message.begin(), message.end(), std::ostream_iterator<int>(shash, " "));
-      std::string s = _sha256(shash.str());
-      std::vector<T> hashed_value(s.begin(), s.end());
-      std::cout<<"inside the joint_send_verify_ints_message party " << "gate id= "<< gate_id <<std::endl;
-
-      for(int i = 0; i < hashed_value.size(); i++) {
-        std::cout <<" message sending joint_send_verify_ints_message :: my_id= "<< my_id_ << "  HASH of common value sent == "<< hashed_value[i]<<" " <<std::endl;
-      }
-
-      communication_layer_.send_message(party_k, build_gate_message(gate_id,2, hashed_value));
-      std::cout<<"inside the joint_send_verify_ints_message party 1" << "gate id= "<< gate_id <<std::endl;
-    } else if (my_id_ == party_k) {
-
-      joint_message_verify_64_2 = new std::vector<std::uint64_t>;
-
-      if (std::is_same<T, std::uint64_t>::value) {  //P2 now goes inside
-        // *share_future_8(std::move(register_for_ints_message<T>(party_i, gate_id, num_elements)));
-        // *share_future_verify_8(std::move(register_for_ints_message<T>(party_j, gate_id, num_elements)));
-        std::cout<< "inside the joint_send_verify_ints_message *share_future_64" << typeid(*share_future_64).name()<< std::endl;
-
-        // *share_future_64 = register_for_ints_message<T>(party_i, gate_id, num_elements);
-        // *share_future_verify_64 = register_for_ints_message<T>(party_j, gate_id, num_elements);
-        //std::vector<std::uint64_t>
-        *share_future_64 = register_for_ints_message<std::uint64_t>(party_i, gate_id, num_elements,1);
-        std::cout<<" joint_send_verify_ints_message " << "gate id-1 = "<<(gate_id) << std::endl;
-        *share_future_verify_64 = register_for_ints_message<std::uint64_t>(party_j, gate_id, num_elements,2);
-        std::cout<<" joint_send_verify_ints_message " << "gate id-1 = "<<(gate_id) << std::endl;
-
-        std::vector<T> *msg;
-        // auto temp;
-        // *msg[0]= share_future_64->get()[0];
-        std::cout<<"joint_send_verify_ints_message: just before get() " <<std::endl;
-        std::cout<<" joint_send_verify_ints_message " << "gate id-1 = "<<(gate_id) << std::endl;
-
-        auto temp = share_future_64->get();
-
-
-        std::cout<<"joint_send_verify_ints_message: data type of temp = "<< typeid(temp).name() <<std::endl;
-        for(int i = 0; i < temp.size(); i++) {
-          std::cout <<" message received joint_send_verify_ints_message :: my_id= "<< my_id_ << "  common value received == "<< temp[i]<<" " <<std::endl;
-        }
-
-        // *joint_message_verify_64_2->push_back(temp);
-        *joint_message_verify_64_2->insert(joint_message_verify_64_2->begin(), temp.begin(), temp.end());
-
-        //COMMON VALUE is SENT And RECEIVED
-        //to do -- VERIFY  share_future_  with  share_future_verify
-        //hash
-        //do hash of the message and computation cost would be accounted for.
-        //Do not need to do equality check
-        std::stringstream shash;
-        // std::copy((*msg[0]).begin(), (*msg[0]).end(), std::ostream_iterator<int>(shash, " "));
-        std::copy(temp.begin(), temp.end(), std::ostream_iterator<int>(shash, " "));
-        std::string s = _sha256(shash.str());
-        std::vector<T> hashed_value2(s.begin(), s.end());
-        for(int i = 0; i < hashed_value2.size(); i++) {
-          std::cout <<" message received joint_send_verify_ints_message :: my_id= "<< my_id_ << "  HASH of common value received == "<< hashed_value2[i]<<" " <<std::endl;
-        }
-
-
-
-      }
-      // else if(std::is_same<T, std::uint16_t>::value){
-      //   *share_future_16 = register_for_ints_message<T>(party_ijk[0], gate_id, num_elements) ;
-      //   *share_future_verify_16 = register_for_ints_message<T>(party_ijk[1], gate_id, num_elements);
-      //   std::vector<T> msg;
-      //   msg[0]= share_future_16->get()[0];
-      //   //to do -- VERIFY  share_future_  with  share_future_verify
-      // }
-      // else if(std::is_same<T, std::uint32_t>::value){
-      //   *share_future_32 = register_for_ints_message<T>(party_ijk[0], gate_id, num_elements);
-      //   *share_future_verify_32 = register_for_ints_message<T>(party_ijk[1], gate_id, num_elements);
-      //   std::vector<T> msg;
-      //   msg[0]= share_future_32->get()[0];
-      //   //to do -- VERIFY  share_future_  with  share_future_verify
-      // }else if(std::is_same<T, std::uint64_t>::value){
-      //   *share_future_64 = register_for_ints_message<T>(party_ijk[0], gate_id, num_elements);
-      //   *share_future_verify_64 = register_for_ints_message<T>(party_ijk[1], gate_id, num_elements);
-      //   std::vector<T> msg;
-      //   msg[0]= share_future_64->get()[0];
-      //   //to do -- VERIFY  share_future_  with  share_future_verify
-      // }
-
-    }
-}
-
-template void CommMixin::joint_send_verify_ints_message(std:: size_t , std::size_t , std::size_t, std::size_t, const std::vector<uint8_t>&, std::size_t, std::size_t);
-template void CommMixin::joint_send_verify_ints_message(std:: size_t , std::size_t , std::size_t, std::size_t, const std::vector<std::uint16_t>&, std::size_t, std::size_t);
-template void CommMixin::joint_send_verify_ints_message(std:: size_t , std::size_t , std::size_t, std::size_t, const std::vector<std::uint32_t>&, std::size_t, std::size_t);
-template void CommMixin::joint_send_verify_ints_message(std:: size_t , std::size_t , std::size_t  , std::size_t, const std::vector<std::uint64_t>&, std::size_t, std::size_t);
-
-
-/*
- * share_1 = u_i for Party 0, v_i for Party 1
- * share_0 = u_i-1 for Party 0, v_i-1 for Party 1
- * both args are dummy for Party 2.
- */
-// using namespace std;
-// using namespace NTL;
-
-template <typename T>
-void CommMixin::DIZK(std::vector<T> share_1, std::vector<T> share_0)
-{
-  if (my_id_ == 2) {
-    // receive all shares into u1, u0, v1, v0
-    // f = init_field(BIG_MODULUS)
-    // pu1, pu0, pv1, pv2 = init_poly(f, u1) ...
-
-    // bigint bg;
-
-  // ZZ_p::init((const ZZ) 2);
-
-	// ZZ_pX f;
-	// SetCoeff(f, 2, 1);
-	// SetCoeff(f, 3, 1);
-  //
-	// ZZ_pX g;
-	// SetCoeff(g, 4, 1);
-  //
-	// cout<<f<<endl;
-	// cout<<g<<endl;
-  //
-  //
-	// ZZ_pE::init((const ZZ_pX) f);
-	// ZZ_pE h;
-  //
-	// conv(h, g);
-
-	// cout<<h<<endl;
-
-
-  }
-}
-template void CommMixin::DIZK(std::vector<uint8_t> share_1, std::vector<uint8_t> share_0);
-template void CommMixin::DIZK(std::vector<uint16_t> share_1, std::vector<uint16_t> share_0);
-template void CommMixin::DIZK(std::vector<uint32_t> share_1, std::vector<uint32_t> share_0);
-template void CommMixin::DIZK(std::vector<uint64_t> share_1, std::vector<uint64_t> share_0);
-
-
 
 }  // namespace MOTION::proto

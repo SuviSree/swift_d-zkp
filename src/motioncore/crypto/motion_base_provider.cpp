@@ -241,7 +241,14 @@ void MotionBaseProvider::setup(int i) {
     my_randomness_generators_.at(party_id)->Initialize(
         reinterpret_cast<const std::byte*>(my_seeds.at(party_id).data()));
 
+    std::cout << "\n\n\n --- " << my_id_ << std::endl;
+    auto& ring = *my_randomness_generators_.at(party_id);
+    auto ss = ring.GetUnsigned<std::uint8_t>(2, 1);
+    std::cout << "SS\t" << ss.size() << "\tSIZEOF\n" << sizeof(ss) << std::endl;
+    std::cout << " \n---\n\n\n" << party_id << std::endl;
+
   }
+
 
   // receive HelloMessages from other and initialize
   for (std::size_t party_id = 0; party_id < num_parties_; ++party_id) {

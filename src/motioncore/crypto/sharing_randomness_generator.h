@@ -146,6 +146,7 @@ class SharingRandomnessGenerator {
     // Pre-initialize output vector
     std::vector<T> results(num_of_gates);
     GetUnsigned(gate_id, num_of_gates, results.data());
+    std::cout<<" results.size() = " << results.size() << "sizeof(results)" << sizeof(results) <<std::endl; 
     return results;
   }
 
@@ -162,8 +163,10 @@ class SharingRandomnessGenerator {
 
   /// AES context, created only once and reused further
   using EVP_CIPHER_CTX_PTR = std::unique_ptr<EVP_CIPHER_CTX, decltype(&EVP_CIPHER_CTX_free)>;
+  // using EVP_CIPHER_CTX_PTR = std::unique_ptr<EVP_CIPHER_CTX>; //decltype(&EVP_CIPHER_CTX_free)>;
   static constexpr auto MakeCipherCtx = []() {
     return EVP_CIPHER_CTX_PTR(EVP_CIPHER_CTX_new(), &EVP_CIPHER_CTX_free);
+    //return EVP_CIPHER_CTX_PTR(EVP_CIPHER_CTX_new());
   };
   EVP_CIPHER_CTX_PTR ctx_arithmetic_, ctx_boolean_;
 

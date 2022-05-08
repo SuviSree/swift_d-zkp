@@ -84,7 +84,8 @@ class TwoPartyBackend : public CircuitBuilder {
 
   const Statistics::RunTimeStats& get_run_time_stats() const noexcept;
 
- private:
+ //private:
+public:
   Communication::CommunicationLayer& comm_layer_;
   std::size_t my_id_;
   std::shared_ptr<Logger> logger_;

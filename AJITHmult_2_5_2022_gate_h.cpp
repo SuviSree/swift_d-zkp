@@ -506,3 +506,4 @@ class BooleanXArithmeticBEAVYMULGate : public detail::BasicBooleanXArithmeticBEA
 };
 
 }  // namespace MOTION::proto::beavy
+

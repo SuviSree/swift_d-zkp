@@ -1949,10 +1949,10 @@ std::cout <<"my_id="<< my_id << " MULT gamma_r_2 "<< gamma_r_2[0]<<" " <<std::en
     std::cout <<"my_id="<< my_id << " MULT gamma_r_1 "<< gamma_r_1[0]<<" " <<std::endl;
     this->output_->get_secret_share_2()=gamma_r_0; //nijer ta
     this->output_->get_public_share_2()=gamma_r_1; //onner ta
-    this->output_->set_setup_ready();
+    // this->output_->set_setup_ready();
 
-    std::vector<T> zero_v(1);
-    zero_v.push_back(0);
+    // std::vector<T> zero_v(1);
+    // zero_v.push_back(0);
     //
     // beavy_provider_.set_cckt(this->gate_id_, zero_v, u2, zero_v, v2, zero_v, row20);
     beavy_provider_.set_cckt(this->gate_id_, u1, u2, v1, v2, zero_v, row20);
@@ -2574,3 +2574,4 @@ template class BooleanXArithmeticBEAVYMULGate<std::uint32_t>;
 template class BooleanXArithmeticBEAVYMULGate<std::uint64_t>;
 
 }  // namespace MOTION::proto::beavy
+

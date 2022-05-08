@@ -27,19 +27,6 @@
 #include "utility/bit_vector.h"
 #include "utility/block.h"
 #include "utility/reusable_future.h"
-#include "openssl/sha.h"
-#include <sstream>
-#include <string>
-#include <iomanip>
-#include <NTL/ZZ_p.h>
-#include <NTL/ZZ_pX.h>
-#include <NTL/ZZ_pE.h>
-
-#include <iostream>
-
-
-// using namespace std;
-// using namespace NTL;
 
 namespace MOTION {
 
@@ -97,12 +84,6 @@ class CommMixin {
   template <typename T>
   void joint_verify_ints_message(std:: size_t party_i, std::size_t party_j, std::size_t party_k, std::size_t gate_id, const std::vector<T>& hashed_value, std::size_t num_elements, std::size_t msg_num);
 
-  template <typename T>
-  void joint_send_verify_ints_message (std:: size_t party_i, std::size_t party_j, std::size_t party_k, std::size_t gate_id, const std::vector<T>& message, std::size_t num_elements, std::size_t msg_num);
-
-  template <typename T>
-  void DIZK(std::vector<T> share_1, std::vector<T> share_0);
-
  // private:
 public:
   flatbuffers::FlatBufferBuilder build_gate_message(std::size_t gate_id, std::size_t msg_num,
@@ -120,31 +101,12 @@ public:
   Communication::CommunicationLayer& communication_layer_;
   Communication::MessageType gate_message_type_;
   std::size_t my_id_;
-  // std::size_t gate_id_;
   std::size_t num_parties_;
   std::shared_ptr<GateMessageHandler> message_handler_;
   std::shared_ptr<Logger> logger_;
   ENCRYPTO::ReusableFiberFuture<std::vector<std::uint64_t>> share_future_;
 
 
-  // ENCRYPTO::ReusableFiberFuture<std::vector<T>> share_future_8;
-  // ENCRYPTO::ReusableFiberFuture<std::vector<T>> share_future_verify_8;
-
-
-  ENCRYPTO::ReusableFiberFuture<std::vector<std::uint8_t>> *share_future_8;
-  ENCRYPTO::ReusableFiberFuture<std::vector<std::uint8_t>> *share_future_verify_8;
-  ENCRYPTO::ReusableFiberFuture<std::vector<std::uint16_t>> *share_future_16;
-  ENCRYPTO::ReusableFiberFuture<std::vector<std::uint16_t>> *share_future_verify_16;
-  ENCRYPTO::ReusableFiberFuture<std::vector<std::uint32_t>> *share_future_32;
-  ENCRYPTO::ReusableFiberFuture<std::vector<std::uint32_t>> *share_future_verify_32;
-  ENCRYPTO::ReusableFiberFuture<std::vector<std::uint64_t>> *share_future_64;
-  ENCRYPTO::ReusableFiberFuture<std::vector<std::uint64_t>> *share_future_verify_64;
-
-  std::vector<std::uint64_t> *joint_message_verify_64_1;
-  std::vector<std::uint64_t> *joint_message_verify_64_2;
-
-  // const NTL::ZZ c1;
-  // NTL::ZZ_p::init(c1);
 };
 
 }  // namespace proto

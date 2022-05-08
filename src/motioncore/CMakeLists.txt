@@ -166,6 +166,7 @@ target_compile_options(motion PRIVATE
         -pedantic -ansi
         -maes -msse2 -msse4.1 -msse4.2 -mpclmul
         -ffunction-sections -march=native -ffast-math
+        -g -O2 -w -g -std=c++11 -pthread -march=native -lntl -lgmp -lm
         ${MOTION_VECT_COST_MODEL_GCC_FLAG}
         )
 
@@ -207,7 +208,6 @@ if (MOTION_COMPILATION_TIME_DEBUGGING)
 endif ()
 
 add_dependencies(motion fbs-generation motion_config)
-
 target_include_directories(motion PUBLIC
         $<INSTALL_INTERFACE:include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/>
@@ -216,6 +216,7 @@ target_include_directories(motion PUBLIC
         $<BUILD_INTERFACE:${MOTION_ROOT_DIR}/extern/fmt/include>
         $<BUILD_INTERFACE:${MOTION_ROOT_DIR}/extern/flatbuffers/include>
         ${Boost_INCLUDE_DIRS}
+        /usr/local/include
         )
 
 target_compile_definitions(motion PUBLIC FMT_HEADER_ONLY BOOST_ERROR_CODE_HEADER_ONLY)
@@ -228,6 +229,7 @@ target_link_libraries(motion
         Boost::log
         OpenSSL::Crypto
         OpenSSL::SSL
+        ntl
         )
 
 target_link_libraries(motion
