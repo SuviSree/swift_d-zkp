@@ -1619,7 +1619,7 @@ void ArithmeticBEAVYMULGate<T>::evaluate_setup() { // SUVI
 std::cout <<"my_id="<< my_id << " MULT gamma_r_2 "<< gamma_r_2[0]<<" " <<std::endl;
  this->output_->get_secret_share_2()=gamma_r_0;
  this->output_->get_public_share_2()=gamma_r_2;
- this->output_->set_setup_ready();
+ // this->output_->set_setup_ready();
 
  std::cout<<"\n----------------CONSISTENCY CHECK--------------------\n"<<std::endl;
  std::cout<< " MULT: u1 "<<u1[0]<<std::endl;
@@ -1629,10 +1629,11 @@ std::cout <<"my_id="<< my_id << " MULT gamma_r_2 "<< gamma_r_2[0]<<" " <<std::en
  std::cout<<"\n----------------CONSISTENCY CHECK--------------------\n"<<std::endl;
 
 
- beavy_provider_.set_cckt(this-> gate_id_, u1, u2, v1, v2, z0, alpha0);
+ beavy_provider_.set_cckt(this-> gate_id_, u1, u2, v1, v2, z0, z2, alpha0, row02, row01);
 
  std::size_t last_mult_gate_id=99;
  beavy_provider_.DIZK_verify(last_mult_gate_id);
+ this->output_->set_setup_ready();
 
 
 
@@ -1729,8 +1730,8 @@ std::cout <<"my_id="<< my_id << " MULT gamma_r_2 "<< gamma_r_2[0]<<" " <<std::en
 
    v1.push_back(lambda_x2[0]);
    v2.push_back(lambda_x1[0]);
-   u1.push_back(lambda_y2[0]);
-   u2.push_back(lambda_y1[0]);
+   u1.push_back(lambda_y2[0]); //shared with p0
+   u2.push_back(lambda_y1[0]); //shared with p2
 
    std::vector<T> alpha1(num_simd_);
    std::transform(std::begin(row10),
@@ -1793,15 +1794,15 @@ std::cout <<"my_id="<< my_id << " MULT gamma_r_2 "<< gamma_r_2[0]<<" " <<std::en
     std::cout <<"my_id="<< my_id << " MULT gamma_r_1 "<< gamma_r_1[0]<<" " <<std::endl;
     this->output_->get_secret_share_2()=gamma_r_2; //nijer ta
     this->output_->get_public_share_2()=gamma_r_1; //onner ta
-    this->output_->set_setup_ready();
+    // this->output_->set_setup_ready();
 
     std::vector<T> zero_v(1);
     zero_v.push_back(0);
 
-    beavy_provider_.set_cckt(this-> gate_id_, u1, zero_v, v1, zero_v, z2, row10);
+    beavy_provider_.set_cckt(this-> gate_id_, u1, u2, v1, v2, z2, z1, alpha1,  row10, row12);
     std::size_t last_mult_gate_id=99;
     beavy_provider_.DIZK_verify(last_mult_gate_id);
-    // this->output_->set_setup_ready();
+    this->output_->set_setup_ready();
 
 
     }
@@ -1887,8 +1888,8 @@ std::cout <<"my_id="<< my_id << " MULT gamma_r_2 "<< gamma_r_2[0]<<" " <<std::en
     std::vector<T> v2;
     v1.push_back(lambda_x1[0]);
     v2.push_back(lambda_x0[0]);
-    u1.push_back(lambda_y1[0]);
-    u2.push_back(lambda_y0[0]);
+    u1.push_back(lambda_y1[0]); //shared with p1
+    u2.push_back(lambda_y0[0]); //shared with p0
     std::vector<T> alpha2(num_simd_);
     std::transform(std::begin(row21),
            std::end(row21),
@@ -1949,16 +1950,16 @@ std::cout <<"my_id="<< my_id << " MULT gamma_r_2 "<< gamma_r_2[0]<<" " <<std::en
     std::cout <<"my_id="<< my_id << " MULT gamma_r_1 "<< gamma_r_1[0]<<" " <<std::endl;
     this->output_->get_secret_share_2()=gamma_r_0; //nijer ta
     this->output_->get_public_share_2()=gamma_r_1; //onner ta
-    this->output_->set_setup_ready();
+    // this->output_->set_setup_ready();
 
     std::vector<T> zero_v(1);
     zero_v.push_back(0);
     //
     // beavy_provider_.set_cckt(this->gate_id_, zero_v, u2, zero_v, v2, zero_v, row20);
-    beavy_provider_.set_cckt(this->gate_id_, u1, u2, v1, v2, zero_v, row20);
+    beavy_provider_.set_cckt(this->gate_id_, u1, u2, v1, v2, z1, z0, alpha2, row21, row20);
     std::size_t last_mult_gate_id=99;
     beavy_provider_.DIZK_verify(last_mult_gate_id);
-    // this->output_->set_setup_ready();
+    this->output_->set_setup_ready();
 
     }
 

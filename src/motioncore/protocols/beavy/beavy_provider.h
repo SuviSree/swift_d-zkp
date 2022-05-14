@@ -330,16 +330,20 @@ public:
   std::shared_ptr<Logger> logger_;
   bool fake_setup_;
 
-  ZZ_pE _shares[6 * NUMMULGATES];
+  ZZ_pE _shares[9 * NUMMULGATES];
+
+    ZZ_pE share_Round1[6*NUMMULGATES];
+    ZZ_pE share_Round2_1[6*NUMMULGATES]; //
+    ZZ_pE share_Round2_2[6*NUMMULGATES];
   int _numgatesshared = 0;
 
-  void set_cckt(std::size_t gate_id, std::vector<uint8_t>& ui, std::vector<uint8_t>& ui1, std::vector<uint8_t>& vi, std::vector<uint8_t>& vi1, std::vector<uint8_t>& alphai, std::vector<uint8_t>& zi);
+  void set_cckt(std::size_t gate_id, std::vector<uint8_t>& ui, std::vector<uint8_t>& ui1, std::vector<uint8_t>& vi, std::vector<uint8_t>& vi1, std::vector<uint8_t>& zi, std::vector<uint8_t>& zj, std::vector<uint8_t>& alphai, std::vector<uint8_t>& rowi, std::vector<uint8_t>& rowj);
 
-  void set_cckt(std::size_t gate_id, std::vector<uint16_t>& ui, std::vector<uint16_t>& ui1, std::vector<uint16_t>& vi, std::vector<uint16_t>& vi1, std::vector<uint16_t>& alphai, std::vector<uint16_t>& zi);
+  void set_cckt(std::size_t gate_id, std::vector<uint16_t>& ui, std::vector<uint16_t>& ui1, std::vector<uint16_t>& vi, std::vector<uint16_t>& vi1, std::vector<uint16_t>& zi, std::vector<uint16_t>& zj, std::vector<uint16_t>& alphai, std::vector<uint16_t>& rowi, std::vector<uint16_t>& rowj);
 
-  void set_cckt(std::size_t gate_id, std::vector<uint32_t>& ui, std::vector<uint32_t>& ui1, std::vector<uint32_t>& vi, std::vector<uint32_t>& vi1, std::vector<uint32_t>& alphai, std::vector<uint32_t>& zi);
+  void set_cckt(std::size_t gate_id, std::vector<uint32_t>& ui, std::vector<uint32_t>& ui1, std::vector<uint32_t>& vi, std::vector<uint32_t>& vi1, std::vector<uint32_t>& zi, std::vector<uint32_t>& zj, std::vector<uint32_t>& alphai, std::vector<uint32_t>& rowi, std::vector<uint32_t>& rowj);
 
-  void set_cckt(std::size_t gate_id, std::vector<uint64_t>& ui, std::vector<uint64_t>& ui1, std::vector<uint64_t>& vi, std::vector<uint64_t>& vi1, std::vector<uint64_t>& alphai, std::vector<uint64_t>& zi);
+  void set_cckt(std::size_t gate_id, std::vector<uint64_t>& ui, std::vector<uint64_t>& ui1, std::vector<uint64_t>& vi, std::vector<uint64_t>& vi1, std::vector<uint64_t>& zi, std::vector<uint64_t>& zj, std::vector<uint64_t>& alphai, std::vector<uint64_t>& rowi, std::vector<uint64_t>& rowj);
 
   void Round1(ZZ_pE share[], GF2X f, ZZ_pE theta[], ZZ_pE pi[], ZZ_pE pi2[], ZZ_pE pi3[]);
   void Round2(ZZ_pE share[],ZZ_pE Beta[], ZZ_pE DIZK_share[], GF2X f, ZZ_pE fp_r[], ZZ_pE& P_r_t, ZZ_pE& b_t);

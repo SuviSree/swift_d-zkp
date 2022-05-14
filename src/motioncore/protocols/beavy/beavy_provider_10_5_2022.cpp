@@ -1335,7 +1335,6 @@ void BEAVYProvider::set_cckt(std::size_t gate_id, std::vector<uint64_t>& ui, std
 
     std::cout<<" DIZK_verify:: reached here3"<<std::endl;
 
-if(my_id_==1){
     //pi
     share_Round1[0 + 6*_numgatesshared]=_shares[0 + 6*_numgatesshared];
     share_Round1[1 + 6*_numgatesshared]=_shares[1 + 6*_numgatesshared];
@@ -1343,27 +1342,26 @@ if(my_id_==1){
     share_Round1[3 + 6*_numgatesshared]=_shares[3 + 6*_numgatesshared];
     share_Round1[4 + 6*_numgatesshared]=_shares[6 + 6*_numgatesshared]; //alphai
     share_Round1[5 + 6*_numgatesshared]=_shares[4 + 6*_numgatesshared]; //zi
-}
+
   std::cout<<" DIZK_verify:: reached here4"<<std::endl;
     //p_(i-1)
-if(my_id_==0){
-    share_Round2_1[0 + 6*_numgatesshared]=_shares[1+ 6*_numgatesshared];
+    share_Round2_1[0 + 6*_numgatesshared]=_shares[0 + 6*_numgatesshared];
     share_Round2_1[1 + 6*_numgatesshared]=zero;
-    share_Round2_1[2 + 6*_numgatesshared]=_shares[3 + 6*_numgatesshared];
+    share_Round2_1[2 + 6*_numgatesshared]=_shares[2 + 6*_numgatesshared];
     share_Round2_1[3 + 6*_numgatesshared]=zero;
     share_Round2_1[4 + 6*_numgatesshared]=_shares[8 + 6*_numgatesshared];
+    //share_Round2_1[5 + 6*_numgatesshared]=_shares[4 + 6*_numgatesshared]; //zi
     share_Round2_1[5 + 6*_numgatesshared]=_shares[5 + 6*_numgatesshared]; //z(i-1)
-}
-  std::cout<<" DIZK_verify:: reached here5"<<std::endl;
 
-if (my_id_==2){
+  std::cout<<" DIZK_verify:: reached here5"<<std::endl;
+    //p_(i+1)
     share_Round2_2[0 + 6*_numgatesshared]=zero;
-    share_Round2_2[1 + 6*_numgatesshared]=_shares[0 + 6*_numgatesshared];
+    share_Round2_2[1 + 6*_numgatesshared]=_shares[1 + 6*_numgatesshared];
     share_Round2_2[2 + 6*_numgatesshared]=zero;
-    share_Round2_2[3 + 6*_numgatesshared]=_shares[2 + 6*_numgatesshared];
+    share_Round2_2[3 + 6*_numgatesshared]=_shares[3 + 6*_numgatesshared];
+    // share_Round2_2[3 + 6*_numgatesshared]=neg[0];
     share_Round2_2[4 + 6*_numgatesshared]=neg;
     share_Round2_1[5 + 6*_numgatesshared]=zero;
-  }
 
   std::cout<<" DIZK_verify:: reached here6"<<std::endl;
 
@@ -1385,56 +1383,64 @@ void BEAVYProvider::DIZK_verify (std::size_t last_mult_gate_id) {
   initiali();
   std::size_t gate_id_next = 101;
   std::size_t gate_id_prev = 99;
+  //
+  int pid=my_id_;
 
-  ENCRYPTO::ReusableFiberFuture<std::vector<uint64_t>> share_future_next_array01[(6*NUMcGATES + 2*NUMgGATES + 1)*3];
+  //auto share_future_next_array[10];
+  ENCRYPTO::ReusableFiberFuture<std::vector<uint64_t>> share_future_next_array[(6*NUMcGATES + 2*NUMgGATES + 1)*3];
+  ENCRYPTO::ReusableFiberFuture<std::vector<uint64_t>> share_future_prev_array[(6*NUMcGATES + 2*NUMgGATES + 1)*3];
 
-  ENCRYPTO::ReusableFiberFuture<std::vector<uint64_t>> share_future_next_array21[(6*NUMcGATES + 2*NUMgGATES + 1)*3];
+//communciation pre-requisite for Round 1
+ int counter=0;
+  for(std::size_t i=0; i<(6*NUMcGATES + 2*NUMgGATES + 1)*3; i++){
+      share_future_next_array[i]=register_for_ints_message<uint64_t>(((pid + 1)%3), gate_id_next, 1, i);
+      share_future_prev_array[i]=register_for_ints_message<uint64_t>(((pid + 2)%3), gate_id_prev, 1, i);
+      ++counter;
+    }
+
+  //
+  // auto share_future_next = register_for_ints_message<uint64_t>(((pid + 1)%3), gate_id_next, 1, 1);
+  // auto share_future_prev = register_for_ints_message<uint64_t>(((pid + 2)%3), gate_id_prev, 1, 1);
+
+  // //------------------for Round 2-----------------------------------------
+  // auto share_future_next1 = register_for_ints_message<uint64_t>(((pid + 1)%3), gate_id_next, 1, counter);
+  // auto share_future_next2 = register_for_ints_message<uint64_t>(((pid + 1)%3), gate_id_next, 1, 3);
+  // auto share_future_next3 = register_for_ints_message<uint64_t>(((pid + 1)%3), gate_id_next, 1, 4);
 
 
+  // auto share_future_prev1 = register_for_ints_message<uint64_t>(((pid + 2)%3), gate_id_prev, 1, 2);
+
+//-----communication pre-requisite for Round 2
   ENCRYPTO::ReusableFiberFuture<std::vector<uint64_t>> share_future_next_fpr_array[(6*NUMcGATES)*3];
   ENCRYPTO::ReusableFiberFuture<std::vector<uint64_t>> share_future_next_prt_array[3];
   ENCRYPTO::ReusableFiberFuture<std::vector<uint64_t>> share_future_next_bt_array[3];
 
-  int counter=0;
-  int new_counter=0;
-
-
-
-
-  if (my_id_==0){
-    for(std::size_t i=0; i<(6*NUMcGATES + 2*NUMgGATES + 1)*3; i++){
-        share_future_next_array01[i]=register_for_ints_message<uint64_t>(1, gate_id_next, 1, i);
-    }
+  int new_counter=counter;
+  for(std::size_t i=0; i<(6*NUMcGATES)*3; i++){
+      share_future_next_fpr_array[i]=register_for_ints_message<uint64_t>(((pid + 1)%3), gate_id_next, 1, counter++);
   }
-  if(my_id_==2){
-    for(std::size_t i=0; i<(6*NUMcGATES + 2*NUMgGATES + 1)*3; i++){
-        share_future_next_array21[i]=register_for_ints_message<uint64_t>(1, gate_id_next, 1, i);
-        ++counter;
-    }
-    // new_counter=counter;
-    for(std::size_t i=0; i<(6*NUMcGATES)*3; i++){
-        share_future_next_fpr_array[i]=register_for_ints_message<uint64_t>(0, gate_id_prev, 1, i);
-        counter=i;
-        std::cout<< "inside REGISTER clause "<< " i "<< i << " counter "<<counter<<std::endl;
-        new_counter=i;
-    }
-    counter++;
-    for(std::size_t i=0; i<3; i++){
-        share_future_next_prt_array[i]=register_for_ints_message<uint64_t>(0, gate_id_prev, 1, counter++);
-    }
-    for(std::size_t i=0; i<3; i++){
-      share_future_next_bt_array[i]=register_for_ints_message<uint64_t>(0, gate_id_prev, 1, counter++);
-    }
-
+  for(std::size_t i=0; i<3; i++){
+      share_future_next_prt_array[i]=register_for_ints_message<uint64_t>(((pid + 1)%3), gate_id_next, 1, counter++);
+  }
+  for(std::size_t i=0; i<3; i++){
+    share_future_next_bt_array[i]=register_for_ints_message<uint64_t>(((pid + 1)%3), gate_id_next, 1, counter++);
   }
 
   std::cout<<"suvi TEST:::----------------my id="<<my_id_<<" (my id + 2)%3 =" <<(my_id_+2)%3 << "(my_id+1) %3" <<(my_id_+1)%3 <<std::endl;
 
-  ZZ_pE theta[NUMcGATES];
+  //-----------------------initializing the Extended Ring, generating the THETA, generating the BETA
+
+
+  ZZ_pE theta[NUMcGATES]; //prottek party has diff theta.
+  //but they will be populated using the same value
+  // ZZ_pE r;
+
   int j=0;
   if(my_id_==0){
     auto& rng5 = motion_base_provider_.get_my_randomness_generator(my_id_);
     auto t=rng5.GetUnsigned<uint64_t>(last_mult_gate_id, NUMcGATES);
+    // conv(r,t[0]);
+    // std::cout<< "DIZK_verify:: r for Round2 = "<< r <<std::endl;
     for(int i=0; i<NUMcGATES; i++){
         std::cout<<"t["<<i<<"]"<<t[i]<<std::endl;
 
@@ -1446,6 +1452,8 @@ void BEAVYProvider::DIZK_verify (std::size_t last_mult_gate_id) {
   }else if(my_id_==1){
     auto& rng5 = motion_base_provider_.get_our_randomness_generator(0);
     auto t=rng5.GetUnsigned<uint64_t>(last_mult_gate_id, NUMcGATES);
+    // conv(r,t[0]);
+    // std::cout<< "DIZK_verify:: r for Round2 = "<< r <<std::endl;
     for(int i=0; i<NUMcGATES; i++){
         std::cout<<"t["<<i<<"]"<<t[i]<<std::endl;
 
@@ -1457,19 +1465,25 @@ void BEAVYProvider::DIZK_verify (std::size_t last_mult_gate_id) {
   }else if(my_id_==2){
     auto& rng5 = motion_base_provider_.get_our_randomness_generator(0);
     auto t=rng5.GetUnsigned<uint64_t>(last_mult_gate_id, NUMcGATES);
+    // conv(r, t[0]);
+    // std::cout<< "DIZK_verify:: r for Round2 = "<< r <<std::endl;
     for(int i=0; i<NUMcGATES; i++){
         std::cout<<"t["<<i<<"]"<<t[i]<<std::endl;
+
         conv(theta[j],t[i]);
         std::cout<<"my _id"<<my_id_<<" value of theta " << theta[j] <<std::endl;
         j++;
+
     }
   }
-  ZZ_pE Beta[NUMgGATES];
+  ZZ_pE Beta[NUMgGATES]; //prottek party has diff theta.
+  //but they will be populated using the same value
   if(my_id_==1){
     auto& rng5=motion_base_provider_.get_my_randomness_generator(my_id_ );
     auto t=rng5.GetUnsigned<uint64_t>(last_mult_gate_id, NUMgGATES);
     for(int i=0; i<NUMgGATES; i++){
         std::cout<<"t["<<i<<"]"<<t[i]<<std::endl;
+
         conv(Beta[i],t[i]);
         std::cout<<"my_id"<<my_id_ <<" value of Beta " << Beta[i] <<std::endl;
 
@@ -1479,6 +1493,7 @@ void BEAVYProvider::DIZK_verify (std::size_t last_mult_gate_id) {
     auto t=rng5.GetUnsigned<uint64_t>(last_mult_gate_id, NUMgGATES);
     for(int i=0; i<NUMgGATES; i++){
         std::cout<<"t["<<i<<"]"<<t[i]<<std::endl;
+
         conv(Beta[i],t[i]);
         std::cout<<"my_id"<<my_id_<<" value of Beta " << Beta[i] <<std::endl;
 
@@ -1488,6 +1503,7 @@ void BEAVYProvider::DIZK_verify (std::size_t last_mult_gate_id) {
     auto t=rng5.GetUnsigned<uint64_t>(last_mult_gate_id, NUMgGATES);
     for(int i=0; i<NUMgGATES; i++){
         std::cout<<"t["<<i<<"]"<<t[i]<<std::endl;
+
         conv(Beta[i],t[i]);
         std::cout<<"my _id"<<my_id_<<" value of Beta " << Beta[i] <<std::endl;
 
@@ -1495,267 +1511,262 @@ void BEAVYProvider::DIZK_verify (std::size_t last_mult_gate_id) {
   }
 
   GF2X f;
+
   SetCoeff(f, 3, 1);
   SetCoeff(f, 2, 1);
   SetCoeff(f, 0, 1);
+
   std::cout<<"polynomial f in DIZK " <<f<<std::endl;
   ZZ_pE pi[6*NUMcGATES + 2*NUMgGATES + 1];
 	ZZ_pE pi1[6*NUMcGATES + 2*NUMgGATES + 1];
 	ZZ_pE pi2[6*NUMcGATES + 2*NUMgGATES + 1];
-  if(my_id_==1){
-      Round1(share_Round1, f, theta, pi, pi1, pi2);
-      std::cout<<"\n ---------------------------- end of ROUND 1------------------------\n"<<std::endl;
-          for(int i=0; i<6*NUMcGATES + 2*NUMgGATES + 1; i++){
-            std::cout<<"pi =  "<<pi[i]<<std::endl;
-          }
-          for(int i=0; i<6*NUMcGATES + 2*NUMgGATES + 1; i++){
-            std::cout<<"pi1 =  "<<pi1[i]<<std::endl;
-          }
-          for(int i=0; i<6*NUMcGATES + 2*NUMgGATES + 1; i++){
-            std::cout<<"pi2 =  "<<pi2[i]<<std::endl;
-          }
-          uint64_t vp1[6*NUMcGATES + 2*NUMgGATES + 1][d], vp2[6*NUMcGATES + 2*NUMgGATES + 1][d];
+  //BEAVYProvider::Round1(share, f,theta, pi, pi1, pi2);
+  for(int i=0;  i < 6 * NUMMULGATES; i++)
+    std::cout<<" shares = " <<_shares[i]<<std::endl;
+  Round1(share_Round1, f, theta, pi, pi1, pi2);
+  std::cout<<"\n ---------------------------- end of ROUND 1------------------------\n"<<std::endl;
 
-        	ZZ_pX temp, temp2;
-        	for(int i = 0; i < 6*NUMcGATES + 2*NUMgGATES + 1; ++i){
-        			temp = conv<ZZ_pX>(pi1[i]);
-              temp2 = conv<ZZ_pX>(pi2[i]);
-        			for(int j = 0; j < 3; ++j){
-        				vp1[i][j] = conv<uint64_t>(coeff(temp, j));
-                vp2[i][j] = conv<uint64_t>(coeff(temp2, j));
-        				std::cout<<"val["<<i<<"]["<<j<<"] ="<<vp1[i][j]<<" ";
-        			}
-        		std::cout<<std::endl;
-        	}
-          // send pi1 -> myID+1, pi2-> myID-1
-          std::cout<<" \n --- inside DIZK, before send_ints_message \n "<<std::endl;
-          for(std::size_t i = 0; i < 6*NUMcGATES + 2*NUMgGATES + 1; ++i){
-        		for(std::size_t j = 0; j < 3; ++j){
-                std::vector<uint64_t> tm;
-                tm.push_back(vp1[i][j]);
-                std::cout<<" SENDING   "<<tm[0]<<"\t"<<vp1[i][j]<<std::endl;
-        				send_ints_message(0, gate_id_next, tm, (3*i)+j);
-            }
-        	}
-          std::cout<<" \n --- inside DIZK, after 1st send_ints_message \n "<<std::endl;
-          for(std::size_t i = 0; i < 6*NUMcGATES + 2*NUMgGATES + 1; ++i){
-        		for(std::size_t j = 0; j < 3; ++j){
-              std::vector<uint64_t> tm1;
-              tm1.push_back(vp2[i][j]);
-                std::cout<<" SENDING   "<<tm1[0]<<"\t " <<vp2[i][j]<<std::endl;
-        				send_ints_message(2, gate_id_next, tm1, (3*i)+j);
-            }
-        	}
+  uint64_t pi_64[6*NUMcGATES + 2*NUMgGATES + 1][d];
+  for(int i=0; i<6*NUMcGATES + 2*NUMgGATES + 1; i++){
+    std::cout<<"pi = "<<pi[i]<<std::endl;
+  }
+  for(int i=0; i<6*NUMcGATES + 2*NUMgGATES + 1; i++){
+    std::cout<<"pi1 = "<<pi1[i]<<std::endl;
+  }
+  for(int i=0; i<6*NUMcGATES + 2*NUMgGATES + 1; i++){
+    std::cout<<"pi2 = "<<pi2[i]<<std::endl;
+  }
 
-    }//end of party p1
-    if(my_id_==0)
-    {
-        uint64_t vp1_rx[6*NUMcGATES + 2*NUMgGATES + 1][d];
-        std::cout<<" \n --- inside DIZK, before .get() \n "<<std::endl;
-        for(std::size_t i = 0; i < 6*NUMcGATES + 2*NUMgGATES + 1; ++i){
-      		for(std::size_t j = 0; j < 3; ++j){
-            auto t2 = share_future_next_array01[(3*i)+j].get(); //pi3
-            vp1_rx[i][j]=t2[0];
-          }
-        }//end of outer for
-        std::cout<<" 1st message received "<<std::endl;
-        for(int i = 0; i < 6*NUMcGATES + 2*NUMgGATES + 1; ++i){
-      		for(int j = 0; j < 3; ++j){
-            std::cout<<"array of received message from round1    ===== \n",vp1_rx[i][j];
-          }
-        }
-        std::cout<<" \n --- inside DIZK, after .get() \n "<<std::endl;
-        // // receive from my_id-1 : pi3, my_id+1: pi4
-        ZZ_pE pi3[6*NUMcGATES + 2*NUMgGATES + 1];
-        ZZ_pX temp9;
-        for(int i = 0; i < 6*NUMcGATES + 2*NUMgGATES + 1; ++i){
+  uint64_t vp1[6*NUMcGATES + 2*NUMgGATES + 1][d], vp2[6*NUMcGATES + 2*NUMgGATES + 1][d];
 
-      		for(int j = 0; j < 3; ++j){
-        // for (int i=0; i < 6*NUMcGATES + 2*NUMgGATES + 1; ++i) {
-            SetCoeff(temp9, j, vp1_rx[i][j]);
-          }
-          pi3[i] = conv<ZZ_pE>(temp9);
-        }
-        std::cout<<" \n--------pi3 received = ------\n"<<std::endl;
-        for(int i=0; i< 6*NUMcGATES + 2*NUMgGATES + 1; i++)
-          std::cout<<pi3[i]<<std::endl;
-
-
-        std::cout<<"\n-----------------END of Round 1----------------------------\n"<<std::endl;
-        std::cout<<"\n -----------------START of Round2------------------------------ \n" <<std::endl;
-        ZZ_pE fp_r[6*NUMcGATES];
-        ZZ_pE P_r_t;
-        ZZ_pE b_t;
-
-
-          //Round2(_share, pi3 /*DIZK_share[]*/, f, a1, a2, a3);
-          Round2(share_Round2_1, Beta, pi3, f, fp_r, P_r_t, b_t);
-          for(int i=0; i<6*NUMcGATES; i++){
-              std::cout<<" After Round 2, fpr populated"<<fp_r[i]<<std::endl;
-          }
-          std::cout<<" After Round 2, P_r_t populated= "<<P_r_t <<std::endl;
-          std::cout<<" After Round 2, b_t populated= "<<b_t<<std::endl;
-
-          uint64_t vp3[6*NUMcGATES][d], vp4[d], vp5[d];
-          std::cout << "NUMcGATES " << NUMcGATES << std::endl;
-          ZZ_pX temp3, temp4, temp5;
-          for(int i = 0; i < 6*NUMcGATES; ++i){
-              temp3 = conv<ZZ_pX>(fp_r[i]);
-              temp4 = conv<ZZ_pX>(P_r_t);
-              temp5 = conv<ZZ_pX>(b_t);
-              for(int j = 0; j < d; ++j){
-                vp3[i][j] = conv<uint64_t>(coeff(temp3, j));
-                vp4[j] = conv<uint64_t>(coeff(temp4, j));
-                vp5[j] = conv<uint64_t>(coeff(temp5, j));
-                // std::cout<<"vp3, fp_r val["<<i<<"]["<<j<<"] ="<<vp3[i][j]<<" ";
-                // std::cout<<"vp4, P_r_t val["<<i<<"]["<<j<<"] ="<<vp4[i]<<" ";
-                // std::cout<<"vp4, b_t val["<<i<<"]["<<j<<"] ="<<vp5[i]<<" ";
-              }
-            std::cout<<std::endl;
-          }
-          int count1=0;
-          std::cout<<" Round 2,  b4 1st ints message"<<std::endl;
-          for(std::size_t i = 0; i < 6*NUMcGATES; ++i){
-        		for(std::size_t j = 0; j < 3; ++j){
-                std::vector<uint64_t> tm;
-                tm.push_back(vp3[i][j]);
-                std::cout<<" SENDING   "<<tm[0]<<"\t"<<vp3[i][j]<<std::endl;
-                send_ints_message(2, gate_id_prev, tm, (3*i)+j);
-                count1=(3*i)+j;
-                std::cout<<" COUNT1 in party 0"<< count1<<std::endl;
-            }
-          }
-          // std::size_t counter1= 6*NUMcGATES)*3;
-          count1++;
-          for(std::size_t j = 0; j < 3; ++j){
-              std::vector<uint64_t> tm;
-              tm.push_back(vp4[j]);
-              std::cout<<" SENDING   "<<tm[0]<<"\t"<<vp4[j]<<std::endl;
-              send_ints_message(2, gate_id_prev, tm, count1++);
-              std::cout<<" COUNT1 in party 0"<< count1<<std::endl;
-          }
-          for(std::size_t j = 0; j < 3; ++j){
-              std::vector<uint64_t> tm;
-              tm.push_back(vp5[j]);
-              std::cout<<" SENDING   "<<tm[0]<<"\t"<<vp5[j]<<std::endl;
-              send_ints_message(2, gate_id_prev, tm, count1++);
-              std::cout<<" COUNT1 in party 0"<< count1<<std::endl;
-
-          }
-
-          std::cout<<"\n ========================== at the end of 1st run of Round2 =================== \n "<<std::endl;
-          //p0 sends fpr, pr, bt to p2
-
-
-
+	ZZ_pX temp, temp2;
+	for(int i = 0; i < 6*NUMcGATES + 2*NUMgGATES + 1; ++i){
+			temp = conv<ZZ_pX>(pi1[i]);
+      temp2 = conv<ZZ_pX>(pi2[i]);
+			for(int j = 0; j < 3; ++j){
+				vp1[i][j] = conv<uint64_t>(coeff(temp, j));
+        vp2[i][j] = conv<uint64_t>(coeff(temp2, j));
+				std::cout<<"val["<<i<<"]["<<j<<"] ="<<vp1[i][j]<<" ";
+			}
+		std::cout<<std::endl;
+	}
+  // send pi1 -> myID+1, pi2-> myID-1
+  std::cout<<" \n --- inside DIZK, before send_ints_message \n "<<std::endl;
+  for(std::size_t i = 0; i < 6*NUMcGATES + 2*NUMgGATES + 1; ++i){
+		for(std::size_t j = 0; j < 3; ++j){
+        std::vector<uint64_t> tm;
+        tm.push_back(vp1[i][j]);
+        std::cout<<" SENDING   "<<tm[0]<<"\t"<<vp1[i][j]<<std::endl;
+				send_ints_message((my_id_ + 1)%3, gate_id_prev, tm, (3*i)+j);
     }
-    if(my_id_==2){
-        uint64_t vp2_rx[6*NUMcGATES + 2*NUMgGATES + 1][d];
-        for(std::size_t i = 0; i < 6*NUMcGATES + 2*NUMgGATES + 1; ++i){
-      		for(std::size_t j = 0; j < 3; ++j){
-            auto t2 = share_future_next_array21[(3*i)+j].get(); //pi4
-            vp2_rx[i][j]=t2[0];
-          }
-        }
-        std::cout<<" 1st message received "<<std::endl;
-        for(int i = 0; i < 6*NUMcGATES + 2*NUMgGATES + 1; ++i){
-      		for(int j = 0; j < 3; ++j){
-            std::cout<<"array of received message from round1    ===== \n",vp2_rx[i][j];
-          }
-        }
-        ZZ_pE pi4[6*NUMcGATES + 2*NUMgGATES + 1];
-        ZZ_pX temp10;
-        for(int i = 0; i < 6*NUMcGATES + 2*NUMgGATES + 1; ++i){
-
-      		for(int j = 0; j < 3; ++j){
-        // for (int i=0; i < 6*NUMcGATES + 2*NUMgGATES + 1; ++i) {
-            SetCoeff(temp10, j, vp2_rx[i][j]);}
-          pi4[i] = conv<ZZ_pE>(temp10);
-        }
-        std::cout<<" \n--------pi4 received = ------\n"<<std::endl;
-        for(int i=0; i< 6*NUMcGATES + 2*NUMgGATES + 1; i++)
-          std::cout<<pi4[i]<<std::endl;
-
-        std::cout<<"\n ========================== at the end of 1st run of Round2 =================== \n "<<std::endl;
-
-          ZZ_pE fp_r_1[6*NUMcGATES];
-          ZZ_pE P_r_t_1;
-          ZZ_pE b_t_1;
-          //Round2 for verification of shares for party P_{i+1}
-          Round2(share_Round2_2, Beta, pi4, f, fp_r_1, P_r_t_1, b_t_1);
-          // Round2(share, pi4 /*DIZK_share[]*/, f, g1, g2, g3);
-         std::cout<<" \n ============= at the end of 2 times round 2 call================= \n "<<std::endl;
+	}
+  std::cout<<" \n --- inside DIZK, after 1st send_ints_message \n "<<std::endl;
+  for(std::size_t i = 0; i < 6*NUMcGATES + 2*NUMgGATES + 1; ++i){
+		for(std::size_t j = 0; j < 3; ++j){
+      std::vector<uint64_t> tm;
+      tm.push_back(vp2[i][j]);
+        std::cout<<" SENDING   "<<tm[0]<<"\t " <<vp2[i][j]<<std::endl;
+				send_ints_message((my_id_ + 2)%3, gate_id_next, tm, (3*i)+j);
+    }
+	}
+std::cout<<" \n --- inside DIZK, after 2nd send_ints_message \n "<<std::endl;
+  // send_ints_message((my_id_ + 1)%3, gate_id_prev, t1, 1);
 
 
-         std::cout<<"after send ints messages of Round2"<<std::endl;
-         // // recv b1, b2, b3 <- myID+1
-         uint64_t vp33[6*NUMcGATES][d], vp44[d], vp55[d];
-         for(std::size_t i = 0; i < 6*NUMcGATES; ++i){
-       		for(std::size_t j = 0; j < 3; ++j){
-               auto tmp= share_future_next_fpr_array[(3*i)+j].get();
-               vp33[i][j]=tmp[0];
-           }
-         }
-         for(std::size_t j = 0; j < 3; ++j){
-           auto tmp= share_future_next_prt_array[j].get();
-           vp44[j]=tmp[0];
-         }
-         for(std::size_t j = 0; j < 3; ++j){
-           auto tmp= share_future_next_bt_array[j].get();
-           std::cout<<" RECEIVING done"<<std::endl;
-           vp55[j]=tmp[0];
-         }
-         std::cout<<" Outside of last receive "<<std::endl;
-         ZZ_pE fpr_rx[6*NUMcGATES], prt_rx, bt_rx;
-         ZZ_pX temp11;
-         for(int i = 0; i < 6*NUMcGATES; ++i){
+  //send_ints_message((my_id_ - 1)%3, gate_id_next, t2);
+  // send_ints_message((my_id_ + 2)%3, gate_id_next, t2, 1);
+  uint64_t vp1_rx[6*NUMcGATES + 2*NUMgGATES + 1][d], vp2_rx[6*NUMcGATES + 2*NUMgGATES + 1][d];
 
-           		for(int j = 0; j < 3; ++j){
-             // for (int i=0; i < 6*NUMcGATES + 2*NUMgGATES + 1; ++i) {
-                 SetCoeff(temp11, j, vp33[i][j]);
+  std::cout<<" \n --- inside DIZK, before .get() \n "<<std::endl;
+  for(std::size_t i = 0; i < 6*NUMcGATES + 2*NUMgGATES + 1; ++i){
+		for(std::size_t j = 0; j < 3; ++j){
+      auto t2 = share_future_next_array[(3*i)+j].get(); //pi3
+      vp1_rx[i][j]=t2[0];
+    }
+  }
+  std::cout<<" 1st message received "<<std::endl;
+  for(int i = 0; i < 6*NUMcGATES + 2*NUMgGATES + 1; ++i){
+		for(int j = 0; j < 3; ++j){
+      std::cout<<"array of received message from round1    ===== \n",vp1_rx[i][j];
+    }
+  }
+  std::cout<<" \n --- inside DIZK, after .get() \n "<<std::endl;
 
-             }
-             fpr_rx[i] = conv<ZZ_pE>(temp11);
-          }
+  for(std::size_t i = 0; i < 6*NUMcGATES + 2*NUMgGATES + 1; ++i){
+		for(std::size_t j = 0; j < 3; ++j){
+      auto t2 = share_future_prev_array[(3*i)+j].get(); //pi4
+      vp2_rx[i][j]=t2[0];
+    }
+  }
+  std::cout<<" 1st message received "<<std::endl;
+  for(int i = 0; i < 6*NUMcGATES + 2*NUMgGATES + 1; ++i){
+		for(int j = 0; j < 3; ++j){
+      std::cout<<"array of received message from round1    ===== \n",vp2_rx[i][j];
+    }
+  }
 
-       for(int j = 0; j < 3; ++j){
-       // for (int i=0; i < 6*NUMcGATES + 2*NUMgGATES + 1; ++i) {
-         SetCoeff(temp11, j, vp44[j]);
-       }
-       prt_rx = conv<ZZ_pE>(temp11);
+  // // receive from my_id-1 : pi3, my_id+1: pi4
+  ZZ_pE pi3[6*NUMcGATES + 2*NUMgGATES + 1];
+  ZZ_pE pi4[6*NUMcGATES + 2*NUMgGATES + 1];
 
-       for(int j = 0; j < 3; ++j){
-       // for (int i=0; i < 6*NUMcGATES + 2*NUMgGATES + 1; ++i) {
-         SetCoeff(temp11, j, vp55[j]);
-       }
-       bt_rx = conv<ZZ_pE>(temp11);
+  ZZ_pX temp9, temp10;
+  for(int i = 0; i < 6*NUMcGATES + 2*NUMgGATES + 1; ++i){
 
+		for(int j = 0; j < 3; ++j){
+  // for (int i=0; i < 6*NUMcGATES + 2*NUMgGATES + 1; ++i) {
+      SetCoeff(temp9, j, vp1_rx[i][j]);
+      SetCoeff(temp10, j, vp2_rx[i][j]);
 
+  }
+  pi3[i] = conv<ZZ_pE>(temp9);
+  pi4[i] = conv<ZZ_pE>(temp10);
+}
+std::cout<<" \n--------pi3 received = ------\n"<<std::endl;
+for(int i=0; i< 6*NUMcGATES + 2*NUMgGATES + 1; i++)
+  std::cout<<pi3[i]<<std::endl;
 
+  std::cout<<" \n--------pi4 received = ------\n"<<std::endl;
+  for(int i=0; i< 6*NUMcGATES + 2*NUMgGATES + 1; i++)
+    std::cout<<pi4[i]<<std::endl;
 
-
-         // t8 = share_future_next1.get();
-         // t9 = share_future_next2.get();
-         // t10 = share_future_next3.get();
-
-         for(int i=0; i<6*NUMcGATES; i++){
-           std::cout <<" received from my_id +1------------ fp_r"<< " my_id " <<fpr_rx[i]<<std::endl;}
-           std::cout <<" received from my_id +1 ------ p_r_t "<< " my_id " <<prt_rx<<std::endl;
-           std::cout <<" received from my_id +1 ------ b_t "<< " my_id " <<bt_rx<<std::endl;
-
-std::cout<< "\n============================ start of Round 3===============================\n"<<std::endl;
-
-           Round3(fpr_rx, prt_rx, bt_rx, fp_r_1, P_r_t_1, b_t_1, theta);
-
-           std::cout<< " back in DIZK, p2, after R3"<<std::endl;
+std::cout<<"\n-----------------END of Round 1----------------------------\n"<<std::endl;
 
 
+std::cout<<"\n -----------------START of Round2------------------------------ \n" <<std::endl;
+ZZ_pE fp_r[6*NUMcGATES];
+ZZ_pE P_r_t;
+ZZ_pE b_t;
 
 
-    }//end of party 2
-    //receive the fpr, prt, bt from p0. run R3. Verify
+  //Round2(_share, pi3 /*DIZK_share[]*/, f, a1, a2, a3);
+  Round2(share_Round2_1, Beta, pi4, f, fp_r, P_r_t, b_t);
+
+  std::cout<<" after Round 2, fp_r populated= "<<fp_r[0] << std::endl;
+  std::cout<<" After Round 2, P_r_t populated= "<<P_r_t <<std::endl;
+  std::cout<<" After Round 2, b_t populated= "<<b_t<<std::endl;
+
+std::cout<<"\n ========================== at the end of 1st run of Round2 =================== \n "<<std::endl;
+
+  ZZ_pE fp_r_1[6*NUMcGATES];
+  ZZ_pE P_r_t_1;
+  ZZ_pE b_t_1;
+  //Round2 for verification of shares for party P_{i+1}
+  Round2(share_Round2_2, Beta, pi3, f, fp_r_1, P_r_t_1, b_t_1);
+  // Round2(share, pi4 /*DIZK_share[]*/, f, g1, g2, g3);
+ std::cout<<" \n ============= at the end of 2 times round 2 call================= \n "<<std::endl;
+
+//interconvertions first
+//convert a1, a2, a3 to uint64_t for sending
+uint64_t vp3[6*NUMcGATES][d], vp4[d], vp5[d];
+std::cout << "NUMcGATES " << NUMcGATES << std::endl;
+ZZ_pX temp3, temp4, temp5;
+for(int i = 0; i < 6*NUMcGATES; ++i){
+    temp3 = conv<ZZ_pX>(fp_r_1[i]);
+    temp4 = conv<ZZ_pX>(P_r_t_1);
+    temp5 = conv<ZZ_pX>(b_t_1);
+    for(int j = 0; j < d; ++j){
+      vp3[i][j] = conv<uint64_t>(coeff(temp3, j));
+      vp4[j] = conv<uint64_t>(coeff(temp4, j));
+      vp5[j] = conv<uint64_t>(coeff(temp5, j));
+      // std::cout<<"vp3, fp_r val["<<i<<"]["<<j<<"] ="<<vp3[i][j]<<" ";
+      // std::cout<<"vp4, P_r_t val["<<i<<"]["<<j<<"] ="<<vp4[i]<<" ";
+      // std::cout<<"vp4, b_t val["<<i<<"]["<<j<<"] ="<<vp5[i]<<" ";
+    }
+  std::cout<<std::endl;
+}
 
 
+// // send a1, a2, a3 -> myID-1
+
+  std::cout<<" Round 2,  b4 1st ints message"<<std::endl;
+  for(std::size_t i = 0; i < 6*NUMcGATES; ++i){
+		for(std::size_t j = 0; j < 3; ++j){
+        std::vector<uint64_t> tm;
+        tm.push_back(vp3[i][j]);
+        std::cout<<" SENDING   "<<tm[0]<<"\t"<<vp3[i][j]<<std::endl;
+        send_ints_message((my_id_ + 2)%3, gate_id_next, tm, new_counter++);
+    }
+  }
+  for(std::size_t j = 0; j < 3; ++j){
+      std::vector<uint64_t> tm;
+      tm.push_back(vp4[j]);
+      std::cout<<" SENDING   "<<tm[0]<<"\t"<<vp4[j]<<std::endl;
+      send_ints_message((my_id_ + 2)%3, gate_id_next, tm, new_counter++);
+  }
+  for(std::size_t j = 0; j < 3; ++j){
+      std::vector<uint64_t> tm;
+      tm.push_back(vp5[j]);
+      std::cout<<" SENDING   "<<tm[0]<<"\t"<<vp5[j]<<std::endl;
+      send_ints_message((my_id_ + 2)%3, gate_id_next, tm, new_counter++);
+  }
+  // send_ints_message((my_id_ + 2)%3, gate_id_next, t6, 3);
+  // send_ints_message((my_id_ + 2)%3, gate_id_next, t7, 4);
+  std::cout<<"after send ints messages of Round2"<<std::endl;
+  // // recv b1, b2, b3 <- myID+1
+  uint64_t vp33[6*NUMcGATES][d], vp44[d], vp55[d];
+  for(std::size_t i = 0; i < 6*NUMcGATES; ++i){
+		for(std::size_t j = 0; j < 3; ++j){
+        auto tmp= share_future_next_fpr_array[(3*i)+j].get();
+        vp33[i][j]=tmp[0];
+    }
+  }
+  for(std::size_t j = 0; j < 3; ++j){
+    auto tmp= share_future_next_prt_array[j].get();
+    vp44[j]=tmp[0];
+  }
+  for(std::size_t j = 0; j < 3; ++j){
+    auto tmp= share_future_next_bt_array[j].get();
+    vp55[j]=tmp[0];
+  }
+  ZZ_pE fpr_rx[6*NUMcGATES], prt_rx, bt_rx;
+  ZZ_pX temp11;
+  for(int i = 0; i < 6*NUMcGATES; ++i){
+
+		for(int j = 0; j < 3; ++j){
+  // for (int i=0; i < 6*NUMcGATES + 2*NUMgGATES + 1; ++i) {
+      SetCoeff(temp11, j, vp33[i][j]);
+
+  }
+  fpr_rx[i] = conv<ZZ_pE>(temp11);
+}
+
+for(int j = 0; j < 3; ++j){
+// for (int i=0; i < 6*NUMcGATES + 2*NUMgGATES + 1; ++i) {
+  SetCoeff(temp11, j, vp44[j]);
+}
+prt_rx = conv<ZZ_pE>(temp11);
+
+for(int j = 0; j < 3; ++j){
+// for (int i=0; i < 6*NUMcGATES + 2*NUMgGATES + 1; ++i) {
+  SetCoeff(temp11, j, vp55[j]);
+}
+bt_rx = conv<ZZ_pE>(temp11);
+
+
+
+
+
+
+
+
+  // t8 = share_future_next1.get();
+  // t9 = share_future_next2.get();
+  // t10 = share_future_next3.get();
+
+  for(int i=0; i<6*NUMcGATES; i++){
+    std::cout <<" received from my_id +1------------ fp_r"<< " my_id " <<fpr_rx[i]<<std::endl;}
+
+    std::cout <<" received from my_id +1 ------ p_r_t "<< " my_id " <<prt_rx<<std::endl;
+    std::cout <<" received from my_id +1 ------ b_t "<< " my_id " <<bt_rx<<std::endl;
+
+
+  for(int i=0; i<6*NUMcGATES; i++){
+    std::cout <<" sent to my_id -1------------ fp_r"<< " my_id " <<fp_r_1[i]<<std::endl;}
+    std::cout <<" sent to my_id -1 ------ p_r_t "<< " my_id " <<P_r_t_1<<std::endl;
+    std::cout <<" sent to my_id -1 ------ b_t "<< " my_id " <<b_t_1<<std::endl;
+
+
+    Round3(fp_r, P_r_t, b_t, fp_r_1, P_r_t_1, b_t_1, theta);
 
 
   std::cout << "IN DIZKVERIFY NIGAAAAAAAAAAAAAAAAAa" << std::endl;
@@ -2055,12 +2066,9 @@ void interpolation(ZZ_pE evaluations[N], GF2X f, ZZ_pE coefficients[N]){
 
 void BEAVYProvider::Round3( ZZ_pE fp_r[], ZZ_pE p_r_t, ZZ_pE b_t, ZZ_pE fp_r_prime[], ZZ_pE p_r_t_prime, ZZ_pE b_t_prime, ZZ_pE theta[] ){
     std::cout<<"\n --------------------ROUND 3--------- \n "<<std::endl;
-    // std::cout<<"received shares from Round 2"<<std::endl;
-    for(int i=0; i< NUMcGATES; i++){
-      std::cout<< " ROUND3 theta values "<<theta[i]<<std::endl;
-    }
+    std::cout<<"received shares from Round 2"<<std::endl;
     for(int i=0; i<(6*NUMcGATES); i++){
-      std::cout<<" \n fp_r is = \n "<<fp_r[i];
+      std::cout<<" fp_r is = "<<fp_r[i];
     }
 
       std::cout<<" p_r_t ="<<p_r_t<<std::endl;
@@ -2069,7 +2077,7 @@ void BEAVYProvider::Round3( ZZ_pE fp_r[], ZZ_pE p_r_t, ZZ_pE b_t, ZZ_pE fp_r_pri
 
       std::cout<<"received shares from Round 2"<<std::endl;
       for(int i=0; i<(6*NUMcGATES); i++){
-        std::cout<<" \n fp_r_prime is = \n"<<fp_r_prime[i];
+        std::cout<<" fp_r_prime is = "<<fp_r_prime[i];
       }
 
         std::cout<<" p_r_t_prime ="<<p_r_t_prime<<std::endl;
@@ -2095,13 +2103,8 @@ void BEAVYProvider::Round3( ZZ_pE fp_r[], ZZ_pE p_r_t, ZZ_pE b_t, ZZ_pE fp_r_pri
 		ZZ_pE P_check;
 		conv(P_check, zero);
 		for(int i = 0; i < NUMcGATES; ++i){
-			P_check += theta[i] * (f_prime_j_r[6*i + 0]*f_prime_j_r[6*i + 2] + f_prime_j_r[6*i + 0]*f_prime_j_r[6*i + 3] + f_prime_j_r[6*i + 1]*f_prime_j_r[6*i + 2] + f_prime_j_r[6*i + 4] - f_prime_j_r[6*i + 5]);
+			P_check += theta[i] * (fp_r_prime[6*i + 0]*fp_r_prime[6*i + 2] + fp_r_prime[6*i + 0]*fp_r_prime[6*i + 3] + fp_r_prime[6*i + 1]*fp_r_prime[6*i + 2] + fp_r_prime[6*i + 4] - fp_r_prime[6*i + 5]);
 		} //
-    std::cout<< " ROUND3 P_check value "<<P_check<<std::endl;
-    std::cout<< " ROUND3 P_r value "<<p_r<<std::endl;
-
-
-
 
 
 		if ((p_r==P_check) && (b==0))
@@ -2130,7 +2133,7 @@ void BEAVYProvider::Round2(ZZ_pE share[], ZZ_pE Beta[], ZZ_pE DIZK_share[], GF2X
   //sample random r from the extended ring
 
   for(int i=0; i<6; i++)
-    std::cout<<"ROUND 2 share["<<i<<"]  = "<<share[i]<<std::endl;
+    std::cout<<"share["<<i<<"]  = "<<share[i]<<std::endl;
 
   ZZ_pX r1;
   ZZ_pE r;
@@ -2175,7 +2178,7 @@ void BEAVYProvider::Round2(ZZ_pE share[], ZZ_pE Beta[], ZZ_pE DIZK_share[], GF2X
   for(int j = 0; j < 6*NUMcGATES; ++j){
       		ZZ_pE c[NUMgGATES+1]; //Evaluation Vectors //Evaluated dPolynomials
       		c[0] = w[j]; // i_th poly will have i_th w as const
-          for(int l = 1; l < NUMgGATES  + 1 ; ++l){ //rest of them are the shares
+          for(int l = 1; l < NUMgGATES ; ++l){ //rest of them are the shares
       			std::cout<<l<<std::endl;
       			c[l] = share[6*NUMcGATES*(l - 1) + j]; //x from share for interpolation
       		}
@@ -2188,8 +2191,6 @@ void BEAVYProvider::Round2(ZZ_pE share[], ZZ_pE Beta[], ZZ_pE DIZK_share[], GF2X
       			SetCoeff(fp[j], l, y[l]); //at lth degree put y[l] bcz y is the coefficient vector for the polynomial
 
       		std::cout<<"fp["<<j<<"] = "<< fp[j]<<std::endl;
-
-
   	} //end of making polynomials
 
   //verify at the random r point on the field
@@ -2199,7 +2200,7 @@ void BEAVYProvider::Round2(ZZ_pE share[], ZZ_pE Beta[], ZZ_pE DIZK_share[], GF2X
 
 
     for(int i=0; i<(6*NUMcGATES); i++){
-        // std::cout<<"reached here" <<std::endl;
+        std::cout<<"reached here" <<std::endl;
         fp_r[i] = eval(fp[i], r);
         std::cout<<" fi polynomials evaluated at random r" <<fp_r[i]<<std::endl;
     }
@@ -2216,7 +2217,7 @@ void BEAVYProvider::Round2(ZZ_pE share[], ZZ_pE Beta[], ZZ_pE DIZK_share[], GF2X
 
   //calculate the Beta round 2 step 3
 
-  for(int j=1; j<NUMgGATES+1; j++){
+  for(int j=0; j<NUMgGATES; j++){
 
       ZZ_pE sum;
       conv(sum, zero);
@@ -2245,36 +2246,12 @@ void BEAVYProvider::Round2(ZZ_pE share[], ZZ_pE Beta[], ZZ_pE DIZK_share[], GF2X
       }
       //b_t=Beta[j]*sum; //Beta[j] is ZZ_pE. sum is ZZ_pE.
       //std::cout<<"Beta["<<j<<"]="<<Beta[j]<<std::endl;
-      b_t += Beta[j-1]*sum;
-      std::cout << "IN ROUND 2 LOOP " << Beta[j-1] << " \t" << j-1 << " \t" << sum << " \t" << b_t << std::endl;
+      b_t += Beta[j]*sum;
+      std::cout << "IN ROUND 2 LOOP " << Beta[j] << " \t" << j << " \t" << sum << " \t" << b_t << std::endl;
   }
 
   std::cout << " the b_t needed = " <<b_t <<std::endl;
 
-  //===========================SELF TESTING===============================================
-  std::cout<< "\n SELF TESTING=========================================================================================== Round 2 pr_t" <<std::endl;
-  // ZZ_pX r1;
-  // ZZ_pE r;
-  // // random(r);
-  // // SetCoeff(r1, 0, 11094380486151696959);
-  // // SetCoeff(r1, 1, 5686881901046385085);
-  // // SetCoeff(r1, 2, 14448528186403186649);
-  // SetCoeff(r1, 0, 11094380486151696969);
-  // SetCoeff(r1, 1, 5686881901046385086);
-  // SetCoeff(r1, 2, 14448528186403186659);
-  // conv(r,r1);
-
- //  if(my_id_ ==2){
- //    auto vl=eval(P, r);
- //  std::cout<< " ===================Round 1:: party 2:: P evaluated at fixed r "<<vl<<std::endl;}
- //
- //  if(my_id_ ==0){
- //    auto vl1=eval(P, r);
- //  std::cout<< " ===================Round 1:: party 0:: P evaluated at fixed r "<<vl<<std::endl;}
- //  //=========================check whether the above is equal to the prt
- // auto sm=vl+vl1;
- // std::count<< " sm  "<<sm[0]<<<std::endl;
- // std::cout<<" sum of the shares evaluated by P0 + p2 = p1' randomness"<<std::endl;
 }//end of Round 2
 
 
@@ -2294,25 +2271,20 @@ void BEAVYProvider::Round1(ZZ_pE share[], GF2X f, ZZ_pE theta[], ZZ_pE pi[], ZZ_
     std::cout<<"ROUND1 shares "<<share[i]<<std::endl;
   }
 
-  std::cout<<"c gate check "<<share[0]*share[2] + share[0]*share[3] + share[1]*share[2] + share[4] - share[5]<<std::endl;
 
 
-
-	ZZ_pE w[6*NUMcGATES]; //constant term = UAR term
+	ZZ_pE w[6*NUMcGATES];
 	for(i = 0; i < 6*NUMcGATES; ++i)
 		random(w[i]);
 
-  for(int i=0; i<6*NUMcGATES; i++)
-    std::cout<< " ROUND 1 :: random constant w_j = "<<w[i]<<std::endl;
-
-	// std::cout<<"Reached Here"<<std::endl;
+	std::cout<<"Reached Here"<<std::endl;
   //insert correctn netwwen
   ZZ_pEX fp[6*NUMcGATES]; //each poly has M+1 coefficients. And, how many such polynomials are there 6*L.
       for(j = 0; j < 6*NUMcGATES; ++j){
         ZZ_pE c[NUMgGATES+1]; //Evaluation Vectors //Evaluated dPolynomials
         c[0] = w[j]; // i_th poly will have i_th w as const
-          for(l = 1; l < NUMgGATES +1  ; ++l){ //rest of them are the shares
-            // std::cout<<l<<std::endl;
+          for(l = 1; l < NUMgGATES ; ++l){ //rest of them are the shares
+            std::cout<<l<<std::endl;
             c[l] = share[6*NUMcGATES*(l - 1) + j];
           }
 
@@ -2327,25 +2299,11 @@ void BEAVYProvider::Round1(ZZ_pE share[], GF2X f, ZZ_pE theta[], ZZ_pE pi[], ZZ_
 		std::cout<<"P["<<j<<"]"<< fp[j]<<std::endl;
 	}
 
-  ZZ_pX eval_pt_X;
-  SetCoeff(eval_pt_X, 0, 1);
-  ZZ_pE eval_pt;
-  conv(eval_pt, eval_pt_X);
-
-  ZZ_pE test;
-  i = 0;
-  test = (eval(fp[6*i + 0], eval_pt)*eval(fp[6*i + 2], eval_pt) + eval(fp[6*i + 0], eval_pt)*eval(fp[6*i + 3], eval_pt) + eval(fp[6*i + 1], eval_pt)*eval(fp[6*i + 2], eval_pt) + eval(fp[6*i + 4], eval_pt) - eval(fp[6*i + 5], eval_pt));
-  std::cout<<"testing for test"<<test<<std::endl;
-
-  for(i = 0; i < 6; ++i)
-    std::cout<<"fp["<<i<<"]\t" << eval(fp[i], eval_pt)<<std::endl;
-    std::cout << "share[" <<i<<"]\t"<<share[i]<<std::endl;
-
 	ZZ_pEX P;
 	SetCoeff(P, 0, 0);
 
 	for(i = 0; i < NUMcGATES; ++i){
-		P += theta[i] * (fp[6*i + 0]*fp[6*i + 2] + fp[6*i + 0]*fp[6*i + 3] + fp[6*i + 1]*fp[6*i + 2] + fp[6*i + 4] - fp[6*i + 5]);
+		P += theta[i] * (fp[6*i + 0]*fp[6*i + 2] + fp[6*i + 0]*fp[6*i + 3] + fp[6*i + 1]*fp[6*i + 3] + fp[6*i + 4] - fp[6*i + 5]);
 	} // p is the small g circuit
 
   //val[i]=eval(P, evaluations[i])
@@ -2365,7 +2323,7 @@ void BEAVYProvider::Round1(ZZ_pE share[], GF2X f, ZZ_pE theta[], ZZ_pE pi[], ZZ_
               } //eval_pt_X is the polynomial having the binary equivalent of the evaluation points
 
               ZZ_pE eval_pt;
-              conv(eval_pt, eval_pt_X); //storing the binary equivalent of the coefficients
+              conv(eval_pt, eval_pt_X); //storing the bonary equivalent of the coefficients
               auto vl=eval(P, eval_pt);
               std::cout<<" P evaluated at evaluation points "<< vl<<std::endl;
               if(vl!=0)
@@ -2390,24 +2348,7 @@ void BEAVYProvider::Round1(ZZ_pE share[], GF2X f, ZZ_pE theta[], ZZ_pE pi[], ZZ_
 
 	for (int i=0; i<(6*NUMcGATES+2*NUMgGATES +1); i++)
 			std::cout<<"the share of pi "<<pi[i] << std::endl;
-
-  //===========================SELF TESTING===============================================
-  std::cout<< "\n SELF TESTING=========================================================================================== Round 1 pr_t" <<std::endl;
-  ZZ_pX r1;
-  ZZ_pE r;
-  // random(r);
-  // SetCoeff(r1, 0, 11094380486151696959);
-  // SetCoeff(r1, 1, 5686881901046385085);
-  // SetCoeff(r1, 2, 14448528186403186649);
-  SetCoeff(r1, 0, 11094380486151696969);
-  SetCoeff(r1, 1, 5686881901046385086);
-  SetCoeff(r1, 2, 14448528186403186659);
-  conv(r,r1);
-  auto vl=eval(P, r);
-  std::cout<< " ===================Round 1:::: P evaluated at fixed r "<<vl<<std::endl;
-  //=========================check whether the above is equal to the prt
-
-}// end of R1.
+}
 
 
 
