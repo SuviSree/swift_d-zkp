@@ -1070,6 +1070,7 @@ void ArithmeticBEAVYOutputGate<T>::evaluate_online() {
      std::transform(std::begin(total_mask), std::end(total_mask),
                     std::begin(input_->get_public_share_3()), std::begin(total_mask), std::plus{});
     }else if(my_id==2){
+      return;
       auto lambda_z2=share_future1_.get();
       std::cout<<" O/P online:: lambda_z0 "<<input_->get_secret_share_3()[0]<<std::endl;
       std::cout<<" O/P Online:: lambda_z1 "<<input_->get_public_share_3()[0]<<std::endl;
