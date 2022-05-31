@@ -46,8 +46,18 @@ static double compute_duration(const RunTimeStats::time_point_pair& tpp) {
 }
 
 void AccumulatedRunTimeStats::add(const RunTimeStats& stats) {
-  for (std::size_t i = 0; i <= static_cast<std::size_t>(RunTimeStats::StatID::MAX); ++i) {
-    accumulators_[i](compute_duration(stats.data_[i]));
+  // std::cout << "In AccumulatedRunTimeStats" << std::endl;
+  double presetup_time = 0;
+  for (std::size_t i = 0; i <= static_cast<std::size_t>(RunTimeStats::StatID::base_ots); ++i) {
+    presetup_time += compute_duration(stats.data_[i]);
+    accumulators_[i](0);
+    std::cout << "XXXYYZ " << presetup_time << std::endl;
+  }
+  for (std::size_t i = static_cast<std::size_t>(RunTimeStats::StatID::preprocessing); i <= static_cast<std::size_t>(RunTimeStats::StatID::MAX); ++i) {
+    if (i == static_cast<std::size_t>(RunTimeStats::StatID::preprocessing) || i == static_cast<std::size_t>(RunTimeStats::StatID::evaluate))
+      accumulators_[i](compute_duration(stats.data_[i]) - presetup_time);
+    else
+      accumulators_[i](compute_duration(stats.data_[i]));
   }
   ++count_;
 }
@@ -93,7 +103,7 @@ std::string AccumulatedRunTimeStats::print_human_readable() const {
      << format_line("Base OTs", unit, at(accumulators_, StatID::base_ots), field_width)
      << format_line("OT Extension Setup", unit, at(accumulators_, StatID::ot_extension_setup),
                     field_width)
-     << "---------------------------------------------------------------------------\n"
+     << "******************************************************************************\n"
      << format_line("Preprocessing Total", unit, at(accumulators_, StatID::preprocessing),
                     field_width)
      << format_line("Gates Setup", unit, at(accumulators_, StatID::gates_setup), field_width)

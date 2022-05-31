@@ -44,11 +44,12 @@ struct RunTimeStats {
     sp_setup,
     linalgtriple_setup,
     ot_extension_setup,
+    base_ots,
     preprocessing,  // MTs, OTs etc.
     gates_setup,
     gates_online,
     evaluate,
-    base_ots,
+    // base_ots,
     MAX  // maximal value of this Enum, use as size
   };
 

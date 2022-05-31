@@ -1398,18 +1398,6 @@ void BEAVYProvider::DIZK_verify (std::size_t last_mult_gate_id) {
       ++counter;
     }
 
-  //
-  // auto share_future_next = register_for_ints_message<uint64_t>(((pid + 1)%3), gate_id_next, 1, 1);
-  // auto share_future_prev = register_for_ints_message<uint64_t>(((pid + 2)%3), gate_id_prev, 1, 1);
-
-  // //------------------for Round 2-----------------------------------------
-  // auto share_future_next1 = register_for_ints_message<uint64_t>(((pid + 1)%3), gate_id_next, 1, counter);
-  // auto share_future_next2 = register_for_ints_message<uint64_t>(((pid + 1)%3), gate_id_next, 1, 3);
-  // auto share_future_next3 = register_for_ints_message<uint64_t>(((pid + 1)%3), gate_id_next, 1, 4);
-
-
-  // auto share_future_prev1 = register_for_ints_message<uint64_t>(((pid + 2)%3), gate_id_prev, 1, 2);
-
 //-----communication pre-requisite for Round 2
   ENCRYPTO::ReusableFiberFuture<std::vector<uint64_t>> share_future_next_fpr_array[(6*NUMcGATES)*3];
   ENCRYPTO::ReusableFiberFuture<std::vector<uint64_t>> share_future_next_prt_array[3];

@@ -1881,12 +1881,12 @@ void BEAVYProvider::set_cckt(std::size_t gate_id, std::vector<uint32_t>& ui, std
 			  	GF2X gcd;
 				GF2X a; //a
 				GF2X b; //b
-				XGCD(gcd, a, b, f2, g2);
+				XGCD(gcd, a, b, f2, g2); //step 1 of claim 4.4
 				//std::cout<< " a= "<< a << std::endl;
 				//std::cout<< " b= "<< b << std::endl;
 				//std::cout<< " d= "<< d << std::endl;
 
-				ZZ_pX b_p, a_p, f2_p, g2_p, h_p;
+				ZZ_pX b_p, a_p, f2_p, g2_p, h_p; //a_p is the A(x) polynomial. //b_p is the B(x) polynomial
 
 				for(int i = 0; i < deg1; ++i){
 					long c1;
@@ -1921,7 +1921,9 @@ void BEAVYProvider::set_cckt(std::size_t gate_id, std::vector<uint32_t>& ui, std
 				//std::cout<<"f2_p\t"<<f2_p<<std::endl;
 				//std::cout<<"g2_p\t"<<g2_p<<std::endl;
 
-				h_p = a_p*f2_p + b_p*g2_p - 1;
+        //a(x).f(x) + b(x).g(x) = 1 + 2.h(x)
+        //we got a(x), b(x), f(x), g(x) over Z_2^k . hence, acquiring h(x) from the equation
+				h_p = a_p*f2_p + b_p*g2_p - 1; //h_p is the g_cap polynomial in claim 4.4
 				//std::cout<<"h_p\t"<<h_p<<std::endl;
 
 				ZZ_pE b_E;
@@ -1938,15 +1940,15 @@ void BEAVYProvider::set_cckt(std::size_t gate_id, std::vector<uint32_t>& ui, std
 				h = h + (b_E * g1_p);
 				//std::cout<<"h\t"<<h<<std::endl;
 
-				ZZ_pE B_x;
+				ZZ_pE B_x; //this B_x is the required inverse of g(x) over Z_2^{k} / f(x)
 				B_x=0;
 				for(int i =0; i< deg2; i++) //k=10
 				{
 					ZZ_pE tm1=-h;
 					ZZ_pE tm2=power(tm1,i);
-					B_x+= tm2;
+					B_x+= tm2;    //B_x is the sum of {-2.h(x)}^j with j from 0 to k-1
 				}
-				B_x = B_x * b_E;
+				B_x = B_x * b_E; //B(x) = b(x) * sum of -h(x)
 
 				//std::cout<< " B(x) = " << B_x <<std::endl;
 
@@ -2176,9 +2178,9 @@ void BEAVYProvider::Round3( ZZ_pE fp_r[], ZZ_pE p_r_t, ZZ_pE b_t, ZZ_pE fp_r_pri
 
 
 		if ((p_r==P_check) && (b==0))
-			std::cout<<"ACCEPT"<<std::endl;
+			std::cout<<"\n \n *************************SHARED are CONSISTENT:: ACCEPT the Zero knowledge Proof************************************* \n \n "<<std::endl;
 		else{
-			std::cout<<"ABORT"<<std::endl;
+			std::cout<<"\n \n*************************SHARES are NOT consistent:: ABORT :: reject the Zero Knowledge Proof************************ \n \n "<<std::endl;
       if (p_r!=P_check)
       std::cout<< " Pr condition fails"<<std::endl;
       if (b!=0)
@@ -2379,24 +2381,24 @@ void BEAVYProvider::Round1(ZZ_pE share[], GF2X f, ZZ_pE theta[], ZZ_pE pi[], ZZ_
 	// std::cout<<"Reached Here"<<std::endl;
   //insert correctn netwwen
   ZZ_pEX fp[6*NUMcGATES]; //each poly has M+1 coefficients. And, how many such polynomials are there 6*L.
-      for(j = 0; j < 6*NUMcGATES; ++j){
-        ZZ_pE c[NUMgGATES+1]; //Evaluation Vectors //Evaluated dPolynomials
-        c[0] = w[j]; // i_th poly will have i_th w as const
-          for(l = 1; l < NUMgGATES +1  ; ++l){ //rest of them are the shares
-            // std::cout<<l<<std::endl;
-            c[l] = share[6*NUMcGATES*(l - 1) + j];
-          }
+  for(j = 0; j < 6*NUMcGATES; ++j){
+    ZZ_pE c[NUMgGATES+1]; //Evaluation Vectors //Evaluated dPolynomials
+    c[0] = w[j]; // i_th poly will have i_th w as const
+      for(l = 1; l < NUMgGATES +1  ; ++l){ //rest of them are the shares
+        // std::cout<<l<<std::endl;
+        c[l] = share[6*NUMcGATES*(l - 1) + j];
+      }
 
-          ZZ_pE y[NUMgGATES+1]; //Coefficient Matrix
-          std::cout<<"Reached Here 1"<<std::endl;
-          interpolation(c, f, y);
+      ZZ_pE y[NUMgGATES+1]; //Coefficient Matrix
+      std::cout<<"Reached Here 1"<<std::endl;
+      interpolation(c, f, y);
 
-		std::cout<<"Reached Here 3"<<std::endl;
-		for(l = 0; l < NUMgGATES+1; ++l)
-			SetCoeff(fp[j], l, y[l]); //at lth degree put y[l] bcz y is the coefficient vector for the polynomial
+      std::cout<<"Reached Here 3"<<std::endl;
+      for(l = 0; l < NUMgGATES+1; ++l)
+	       SetCoeff(fp[j], l, y[l]); //at lth degree put y[l] bcz y is the coefficient vector for the polynomial
 
-		std::cout<<"P["<<j<<"]"<< fp[j]<<std::endl;
-	}
+      std::cout<<"P["<<j<<"]"<< fp[j]<<std::endl;
+  } //end of for loop
 
   ZZ_pX eval_pt_X;
   SetCoeff(eval_pt_X, 0, 1);

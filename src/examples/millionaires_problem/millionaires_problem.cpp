@@ -259,10 +259,10 @@ auto create_composite_circuit(const Options& options, MOTION::TwoPartyBackend& b
 
 // return std::make_pair(std::move(input_promise), std::move(output_future));
   }
-  //auto output = gate_factory_arith.make_binary_gate(ENCRYPTO::PrimitiveOperationType::ADD, input_x_arith, input_y_arith);
-
-    auto output1 = gate_factory_arith.make_binary_gate( //ONLine Phase
-        ENCRYPTO::PrimitiveOperationType::MUL, input_x_arith, input_y_arith); //x.y
+  auto output = gate_factory_arith.make_binary_gate(ENCRYPTO::PrimitiveOperationType::MUL, input_x_arith, input_y_arith);
+    //
+    // auto output1 = gate_factory_arith.make_binary_gate( //ONLine Phase
+    //     ENCRYPTO::PrimitiveOperationType::MUL, input_x_arith, input_y_arith); //x.y
   // std::cout<<"inside mill.cpp"<<"party id="<< options.my_id << "after output1"<<std::endl;
   // auto output2 = gate_factory_arith.make_binary_gate(
   //             ENCRYPTO::PrimitiveOperationType::MUL, output1, input_y_arith); //x.y +y
@@ -279,7 +279,7 @@ auto create_composite_circuit(const Options& options, MOTION::TwoPartyBackend& b
   //                                 ENCRYPTO::PrimitiveOperationType::MUL, input_x_arith, output3);
  std::cout<<"APP level::" << "Party id =" << options.my_id << " func = make_binary_gate" <<std::endl;
 
- output_future = gate_factory_arith.make_arithmetic_64_output_gate_my(MOTION::ALL_PARTIES, output1  ); //RECONSTRUCTION //broadcast the result to everyone   //OUTPUTGATE
+ output_future = gate_factory_arith.make_arithmetic_64_output_gate_my(MOTION::ALL_PARTIES, output ); //RECONSTRUCTION //broadcast the result to everyone   //OUTPUTGATE
  std::cout<<"APP level::" << "Party id =" << options.my_id << " func = make_arithmetic_64_output_gate_my" <<std::endl;
 
   std::cout<<"inside mill.cpp"<<"party id="<< options.my_id << "after output gate"<<std::endl;
