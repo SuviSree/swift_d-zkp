@@ -1,20 +1,13 @@
-# MOTION2NX -- A Framework for Generic Hybrid Two-Party Computation and Private Inference with Neural Networks
+# MOTION2NX -- A Framework for Generic Hybrid Three-Party Computation and Private Inference with Neural Networks, with Verification via a Distributed Zero Knowledge Proof. 
 
-This software is an extension of the [MOTION framework for multi-party
-computation](https://github.com/encryptogroup/MOTION).
-We additionally implemented five 2PC protocols with passive security together
-with all 20 possible conversions among each other to enable private evaluation
-of hybrid circuits:
+This software is an extension of the Motion2NX [https://github.com/encryptogroup/MOTION2NX]. MOTION2NX supports 2 party in a honest majority setting. swift_d-zkp supports 3 parties with at most 1 maliciously corrupted adversary.  
 
-- Yao's Garbled Circuits with FreeXOR and Half-Gates
-- Arithmetic and Boolean variants of Goldreich-Micali-Wigderson
-- Arithmetic and Boolean variants of the secret-sharing-based protocols from [ABY2.0 (Patra et al., USENIX Security '21)](https://eprint.iacr.org/2020/1225)
+I implemented 
+-SWIFT ( security with abort) [https://eprint.iacr.org/2020/592]  and 
+-Distributed Zero Knowledge Proof [https://dl.acm.org/doi/abs/10.1145/3319535.3363227 ]
+-a three party shared correlated randomness
 
-Moreover, we support private inference with neural networks by providing secure
-tensor data types and specialized building blocks for common tensor operations.
-With support of the [Open Neural Network Exchange (ONNX)](https://onnx.ai) file
-format, this makes our framework interoperable with industry-standard deep
-learning frameworks such as TensorFlow and PyTorch.
+Both of the above 
 
 Compared to the original MOTION codebase, we made architectural improvements
 to increase flexibility and performance of the framework.
@@ -38,90 +31,43 @@ and correctness.
 
 ## Build Instructions
 
+Kindly refer to the readme of MOTION2NX. 
 
-This software was developed and tested in the following environment (it might
-also work with older versions):
+## AN example run of the Millionaire's problem would look something like the below
 
-- [Arch Linux](https://archlinux.org/)
-- [GCC 11.1.0](https://gcc.gnu.org/) or [Clang/LLVM 12.0.1](https://clang.llvm.org/)
-- [CMake 3.21.4](https://cmake.org/)
-- [Boost 1.76.0](https://www.boost.org/)
-- [OpenSSL 1.1.1.l](https://openssl.org/)
-- [Eigen 3.4.0](https://eigen.tuxfamily.org/)
-- [fmt 8.0.1](https://github.com/fmtlib/fmt)
-- [flatbuffers 2.0.0](https://github.com/google/flatbuffers)
-- [GoogleTest 1.11.0 (optional, for tests, build automatically)](https://github.com/google/googletest)
-- [Google Benchmark 1.6.0 (optional, for some benchmarks, build automatically)](https://github.com/google/benchmark)
-- [HyCC (optional, for the HyCCAdapter)](https://gitlab.com/securityengineering/HyCC)
-- [ONNX 1.10.2 (optional, for the ONNXAdapter)](https://github.com/onnx/onnx)
+/bin/millionaires_problem --my-id 0 --party 0,::1,7271 --party 1,::1,7272 --party 2,::1,7273 --arithmetic-protocol beavy --boolean-protocol beavy --repetitions 1 --input-value 20
 
-The build system downloads and builds GoogleTest and Benchmark if required.
-It also tries to download and build Boost, fmt, and flatbuffers if it cannot
-find these libraries in the system.
+./bin/millionaires_problem --my-id 1 --party 0,::1,7271 --party 1,::1,7272 --party 2,::1,7273 --arithmetic-protocol beavy --boolean-protocol beavy --repetitions 1 --input-value 30
 
-The framework can for example be compiled as follows:
-```
-$ CC=gcc CXX=g++ cmake \
-    -B build_debwithrelinfo_gcc \
-    -DCMAKE_BUILD_TYPE=DebWithRelInfo \
-    -DMOTION_BUILD_EXE=On \
-    -DMOTION_BUILD_TESTS=On \
-    -DMOTION_USE_AVX=AVX2
-$ cmake --build build_debwithrelinfo_gcc
-```
-Explanation of the flags:
+./bin/millionaires_problem --my-id 2 --party 0,::1,7271 --party 1,::1,7272 --party 2,::1,7273 --arithmetic-protocol beavy --boolean-protocol beavy --repetitions 1 --input-value 0
 
-- `CC=gcc CXX=g++`: select GCC as compiler
-- `-B build_debwithrelinfo_gcc`: create a build directory
-- `-DCMAKE_BUILD_TYPE=DebWithRelInfo`: compile with optimization and also add
-  debug symbols -- makes tests run faster and debugging easier
-- `-DMOTION_BUILD_EXE=On`: build example executables and benchmarks
-- `-DMOTION_BUILD_TESTS=On`: build tests
-- `-DMOTION_USE_AVX=AVX2`: compile with AVX2 instructions (choose one of `AVX`/`AVX2`/`AVX512`)
-
-### HyCC Support for Hybrid Circuits
-
-To enable support for HyCC circuits, the HyCC library must be compiled and the
-following flags need additionally be passed to CMake:
-
-- `-DMOTION_BUILD_HYCC_ADAPTER=On`
-- `-DMOTION_HYCC_PATH=/path/to/HyCC` where `/path/to/HyCC` points to the HyCC
-  directory, i.e., the top-level directory of the cloned repository
-
-This builds the library target `motion_hycc` and the `hycc2motion` executable.
+//along with the correctness of swift 
+//and ACCEPT or ABORT statement from the DIZK protocol, the stats would look something like below in each of the 3 parties
 
 
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms 
+MT Setup                 0.000 ms      0.000 ms 
+SP Presetup              0.000 ms      0.000 ms 
+SP Setup                 0.000 ms      0.000 ms 
+SB Presetup              0.000 ms      0.000 ms 
+SB Setup                 0.000 ms      0.000 ms 
+Base OTs                 0.000 ms      0.000 ms 
+OT Extension Setup       0.000 ms      0.000 ms 
+******************************************************************************
+Preprocessing Total      2.483 ms      0.000 ms 
+Gates Setup              9.560 ms      0.000 ms 
+Gates Online             5.895 ms      0.000 ms 
+---------------------------------------------------------------------------
+Circuit Evaluation      24.365 ms      0.000 ms 
+===========================================================================
+Communication with each other party:
+Sent: 0.029 MiB in 300 messages
+Received: 0.029 MiB in 300 messages
+===========================================================================
 
-### ONNX Support for Neural Networks
 
-For ONNX support, the ONNX library must be installed and the following flag
-needs additionally be passed to CMake:
-
-- `-DMOTION_BUILD_ONNX_ADAPTER=On`
-
-This builds the library target `motion_onnx` and the `onnx2motion` executable.
-
-
-
-### Examples
-
-
-#### Using the MOTION2NX Low-Level API
-
-See [here](src/examples/millionaires_problem) for an example solution of Yao's
-Millionaires' Problem.
-
-
-#### Using the `onnx2motion` Application
-
-```
-$ ./bin/onnx2motion \
-    --my-id ${PARTY_ID} \
-    --party 0,::1,7000 \
-    --party 1,::1,7001 \
-    --arithmetic-protocol GMW \
-    --boolean-protocol GMW \
-    --model /path/to/model.onnx \
-    --json
-```
-with "${PARTY_ID}" either 0 or 1.
