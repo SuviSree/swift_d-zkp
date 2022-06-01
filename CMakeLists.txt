@@ -159,3 +159,4 @@ endif (MOTION_BUILD_ONNX_ADAPTER)
 if (MOTION_BUILD_HYCC_ADAPTER)
     add_subdirectory(src/contrib/hycc)
 endif ()
+#the end
