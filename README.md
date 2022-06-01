@@ -4,25 +4,12 @@ This software is an extension of the Motion2NX [https://github.com/encryptogroup
 
 I implemented 
 -SWIFT ( security with abort) [https://eprint.iacr.org/2020/592]  and 
--Distributed Zero Knowledge Proof [https://dl.acm.org/doi/abs/10.1145/3319535.3363227 ]
+-Distributed Zero Knowledge Proof [https://dl.acm.org/doi/abs/10.1145/3319535.3363227 ] using the NTL library [https://libntl.org/]
 -a three party shared correlated randomness
 
-Both of the above 
-
-Compared to the original MOTION codebase, we made architectural improvements
-to increase flexibility and performance of the framework.
-Although the interfaces of this work are currently not compatible with the
-original framework due to the concurrent development of both branches, it is
-planned to integrate the MOTION2NX features into MOTION itself.
-
-
-More information about this work is given in [this extended
-abstract](https://encrypto.de/papers/BCS21PriMLNeurIPS.pdf) which was accepted
-at the [PriML@NeurIPS 2021](https://priml2021.github.io/) workshop.
-It is the result of Lennart Braun's master's thesis in the [ENCRYPTO
-group](https://encrypto.de) at [TU
-Darmstadt](https://www.informatik.tu-darmstadt.de) supervised by Thomas
-Schneider and Rosario Cammarota.
+Compared to the original MOTIO2NX codebase, we made architectural improvements
+to increase flexibility and performance of the framework. 
+No changes need to be made from the protocol level Or from the verification of the protocol level. One can plug in any circuit of choice from the application layer. 
 
 This code is provided as a experimental implementation for testing purposes and
 should not be used in a productive environment. We cannot guarantee security
