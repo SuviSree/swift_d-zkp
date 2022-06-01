@@ -6,7 +6,6 @@ using namespace std;
 
 #include <stddef.h>
 // #include <mpirxx.h>
-//
 // #include "Tools/Exceptions.h"
 // #include "Tools/int.h"
 // #include "Tools/random.h"

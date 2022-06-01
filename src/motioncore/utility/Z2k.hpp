@@ -1,8 +1,3 @@
-/*
- * Z2k.cpp
- *
- */
-
 #ifndef MATH_Z2K_HPP_
 #define MATH_Z2K_HPP_
 
