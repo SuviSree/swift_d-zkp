@@ -1,4 +1,4 @@
-# MOTION2NX -- A Framework for Generic Hybrid Three-Party Computation and Private Inference with Neural Networks, with Verification via a Distributed Zero Knowledge Proof. 
+# swift_d-zkp-- A Framework for Generic Hybrid Three-Party Computation, with Verification via a Distributed Zero Knowledge Proof. 
 
 This software is an extension of the Motion2NX [https://github.com/encryptogroup/MOTION2NX]. MOTION2NX supports 2 party in a honest majority setting. swift_d-zkp supports 3 parties with at most 1 maliciously corrupted adversary.  
 
