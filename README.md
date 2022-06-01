@@ -44,30 +44,6 @@ Kindly refer to the readme of MOTION2NX.
 //along with the correctness of swift 
 //and ACCEPT or ABORT statement from the DIZK protocol, the stats would look something like below in each of the 3 parties
 
-
-===========================================================================
-Run time statistics over 1 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              0.000 ms      0.000 ms 
-MT Setup                 0.000 ms      0.000 ms 
-SP Presetup              0.000 ms      0.000 ms 
-SP Setup                 0.000 ms      0.000 ms 
-SB Presetup              0.000 ms      0.000 ms 
-SB Setup                 0.000 ms      0.000 ms 
-Base OTs                 0.000 ms      0.000 ms 
-OT Extension Setup       0.000 ms      0.000 ms 
-******************************************************************************
-Preprocessing Total      2.483 ms      0.000 ms 
-Gates Setup              9.560 ms      0.000 ms 
-Gates Online             5.895 ms      0.000 ms 
----------------------------------------------------------------------------
-Circuit Evaluation      24.365 ms      0.000 ms 
-===========================================================================
-Communication with each other party:
-Sent: 0.029 MiB in 300 messages
-Received: 0.029 MiB in 300 messages
-===========================================================================
+Heres is the link to the screenshot of the end stats https://drive.google.com/file/d/1MLQWqvrNpRBZECmi-cRBFjfj-FIbBL0F/view?usp=sharing. 
 
 
