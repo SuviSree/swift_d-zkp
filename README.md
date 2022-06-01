@@ -2,7 +2,7 @@
 
 This software is an extension of the Motion2NX [https://github.com/encryptogroup/MOTION2NX]. MOTION2NX supports 2 party in a honest majority setting. swift_d-zkp supports 3 parties with at most 1 maliciously corrupted adversary.  
 
-I implemented 
+I implemented <br />
 -SWIFT ( security with abort) [https://eprint.iacr.org/2020/592]  <br /> 
 -Distributed Zero Knowledge Proof [https://dl.acm.org/doi/abs/10.1145/3319535.3363227 ] using the NTL library [https://libntl.org/] <br />
 -a three party shared correlated randomness <br />
