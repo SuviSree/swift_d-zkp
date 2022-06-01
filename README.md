@@ -28,7 +28,7 @@ Kindly refer to the readme of MOTION2NX.
 
 ./bin/millionaires_problem --my-id 2 --party 0,::1,7271 --party 1,::1,7272 --party 2,::1,7273 --arithmetic-protocol beavy --boolean-protocol beavy --repetitions 1 --input-value 0
 
-//along with the correctness of swift 
+//along with the correctness of swift  <br />
 //and ACCEPT or ABORT statement from the DIZK protocol, the stats would look something like below in each of the 3 parties
 
 Heres is the link to the screenshot of the end stats https://drive.google.com/file/d/1MLQWqvrNpRBZECmi-cRBFjfj-FIbBL0F/view?usp=sharing. 
